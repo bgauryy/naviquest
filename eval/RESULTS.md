@@ -6,7 +6,7 @@ smoothed over. Method and every caveat:
 [research/METHODOLOGY.md](./research/METHODOLOGY.md) · how to run any of it:
 [README.md](./README.md).
 
-Run 2026-09-03 · Chrome 152.0.7977.75 · `@naviquest/core` at commit `986abf8`.
+Run 2026-09-03 · Chrome 152.0.7977.75 · `naviquest` at commit `986abf8`.
 
 ---
 

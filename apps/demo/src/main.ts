@@ -1,5 +1,5 @@
-import { createNaviquest, resolveModelContext, estimateTokens } from '@naviquest/core';
-import type { Address, ToolPayload } from '@naviquest/core';
+import { createNaviquest, resolveModelContext, estimateTokens } from 'naviquest';
+import type { Address, ToolPayload } from 'naviquest';
 
 /**
  * This page owns its own markup, so a missing element is a broken demo rather

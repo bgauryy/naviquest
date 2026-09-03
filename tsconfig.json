@@ -43,8 +43,8 @@
 
     /* The demo imports the SDK by package name, exactly as a host would, so a
        broken export surfaces here instead of after publish. */
-    "paths": { "@naviquest/core": ["./packages/naviquest/src/index.ts"],
-               "@naviquest/core/*": ["./packages/naviquest/*"] },
+    "paths": { "naviquest": ["./packages/naviquest/src/index.ts"],
+               "naviquest/worker": ["./packages/naviquest/src/worker.ts"] },
 
     "skipLibCheck": true
   },

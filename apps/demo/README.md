@@ -1,13 +1,13 @@
 # CityDesk demo
 
-In-page exercise of `@naviquest/core`. This directory is an **app**, not a Yarn package.
+In-page exercise of `naviquest`. This directory is an **app**, not a Yarn package.
 
 ```bash
 yarn install   # repository root
 yarn dev       # http://localhost:5310
 ```
 
-The page imports the SDK by package name (`@naviquest/core`). Vite aliases that to `packages/naviquest/src/index.ts` so a broken export fails here rather than after publish.
+The page imports the SDK by package name (`naviquest`). Vite aliases that to `packages/naviquest/src/index.ts` so a broken export fails here rather than after publish.
 
 Query flags:
 

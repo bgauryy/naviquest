@@ -1,6 +1,6 @@
 # Architecture
 
-`@naviquest/core` is a browser-side WebMCP SDK. **Ask the page. Don't dump it.** Agents
+`naviquest` is a browser-side WebMCP SDK. **Ask the page. Don't dump it.** Agents
 call six token-budgeted tools; each answer is a region or live control, not the document.
 
 **§§ 1–10 are the design. §§ 11–23 are the mechanism.** Tool reference:

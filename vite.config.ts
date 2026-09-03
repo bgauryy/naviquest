@@ -10,9 +10,14 @@ import { fileURLToPath } from 'node:url';
 export default defineConfig({
   root: 'apps/demo',
   resolve: {
-    alias: {
-      '@naviquest/core': fileURLToPath(new URL('./packages/naviquest/src/index.ts', import.meta.url)),
-    },
+    /* Array form with anchored patterns, not the object form. An object alias
+       is a PREFIX match, so a bare `naviquest` key would also rewrite
+       `naviquest/worker` into `.../src/index.ts/worker`. Anchoring each entry
+       keeps the subpath export resolvable and the package name unambiguous. */
+    alias: [
+      { find: /^naviquest$/, replacement: fileURLToPath(new URL('./packages/naviquest/src/index.ts', import.meta.url)) },
+      { find: /^naviquest\/worker$/, replacement: fileURLToPath(new URL('./packages/naviquest/src/worker.ts', import.meta.url)) },
+    ],
   },
   server: { port: 5310, fs: { allow: ['../..'] } },
   preview: { port: 5311 },

@@ -43,7 +43,7 @@ those actions.
 
 ## The thesis: navigation is a bounded loop, at any page size
 
-Understanding a large page is treated today as a context problem—load the HTML or
+Understanding a large page is treated today as a context problem: load the HTML or
 the accessibility tree and let the model find the answer and the control inside
 it, every turn. That representation grows without bound: the WAI-ARIA
 specification is a 318,000-token accessibility snapshot that does not fit most
@@ -58,12 +58,12 @@ thousand-page site:
 - **Across a site:** discover a same-origin resource → the host navigates →
   Naviquest **re-indexes the new page** → retrieve again.
 
-Every step costs a bounded budget—roughly 2,000 tokens per tool call—**regardless
+Every step costs a bounded budget, roughly 2,000 tokens per tool call, **regardless
 of how large the page is**. Measured across live sites: the same
 understand-and-act task costs Naviquest ~2,245 tokens on WAI-ARIA where a full
 accessibility snapshot is 318,765 (a 142× reduction), and the cross-page loop
 followed a discovered same-origin resource and retrieved content on 9 of 10 large
-sites tested. The advantage is not a constant factor—it *grows with page size*,
+sites tested. The advantage is not a constant factor; it *grows with page size*,
 because Naviquest's cost is fixed to the task while the alternatives scale with
 the page. That is what makes a large or multi-page site tractable for an agent
 rather than an open context problem. Sensors: [`eval/`](../../eval)
@@ -96,7 +96,7 @@ retrieval, built-in AI, and live page state in one navigation pipeline:
   semantic observations keep the page model fresh and report what changed.
 
 The agent receives focused content, actionable targets, explicit coverage gaps,
-and useful next calls—not an overwhelming dump of HTML.
+and useful next calls instead of an overwhelming dump of HTML.
 
 ## One SDK, two integration paths
 
@@ -141,7 +141,7 @@ if (hit.outcome !== 'error') console.log(hit.answer?.text, hit.results[0]?.addre
 
 // Registration is a progressive enhancement, NOT a precondition. In a browser
 // without WebMCP it resolves `{ registered: false, reason: 'WebMCP
-// modelContext is unavailable' }` — report it, do not throw on it, or the SDK
+// modelContext is unavailable' }. Report it, do not throw on it, or the SDK
 // breaks on every browser that has not shipped the surface yet.
 const registration = await wf.register();
 if (!registration.registered) console.info('naviquest tools not published:', registration.reason);
@@ -191,7 +191,7 @@ const page = await wf.tools.describe_app();
 ```
 
 Published exports. Two specifiers, and **every published condition points at
-`dist/`** — there is no `development` condition exposing raw TypeScript, because
+`dist/`**. There is no `development` condition exposing raw TypeScript, because
 a consumer's bundler excludes `node_modules` from transpilation:
 
 | Specifier | Types | Default | Source in this workspace |
@@ -203,11 +203,11 @@ The last column is resolved by the repo's Vite alias and `tsconfig.json` paths
 only, so the demo and the evals exercise live source; an installed consumer
 always gets `dist/`. `yarn build` proves it by packing the tarball, extracting it
 into a throwaway `node_modules/naviquest` outside this workspace, and importing
-`createNaviquest` from it — a leftover export whose entry file no longer exists
+`createNaviquest` from it. A leftover export whose entry file no longer exists
 fails the build there rather than in someone's app.
 
-`window.naviquest` is the only documented global, and **the SDK does not set it
-— the host does.** It exists for one job: a component that owns a *closed*
+`window.naviquest` is the only documented global, and **the SDK does not set it;
+the host does.** It exists for one job: a component that owns a *closed*
 shadow root cannot be reached by page JavaScript, so it hands its own root in
 from `connectedCallback()`. Assign it once at bootstrap if your page has such
 components, and skip it otherwise. There is no `window.__*` seam.
@@ -221,7 +221,7 @@ address before you act on it.
 ### With a bundler (Vite, webpack, Next.js, …)
 
 ```ts
-// app.ts — loaded as <script type="module">
+// app.ts, loaded as <script type="module">
 import { createNaviquest } from 'naviquest';
 
 const naviquest = await createNaviquest({
@@ -289,7 +289,7 @@ what `yarn build` produces and what an install ships:
 </script>
 ```
 
-Serve it over HTTP rather than `file://` — module scripts, the worker lane and
+Serve it over HTTP rather than `file://`. Module scripts, the worker lane, and
 the on-device AI APIs all need an origin. The relative `./chunks/*` and
 `./worker.js` requests the entry makes resolve from the mapped URL, so the whole
 `dist/` directory has to be reachable, not just `index.js`.
@@ -301,7 +301,7 @@ the input.** Resolve immediately before acting, because the page may have
 changed since the search:
 
 ```ts
-// locate_control takes `description`, not `query` — it asks for a control by
+// locate_control takes `description`, not `query`. It asks for a control by
 // the job it does, and answers with ranked candidates plus one recommendation.
 const found = await naviquest.tools.locate_control({ description: 'renew my permit' });
 if (found.outcome === 'error' || !found.recommendedAddress) return;
@@ -325,7 +325,7 @@ yarn install
 yarn dev      # CityDesk on http://localhost:5310
 ```
 
-`packages/demo-app/` is the worked example of everything above — closed shadow roots,
+`packages/demo-app/` is the worked example of everything above: closed shadow roots,
 `exclude`, a first-party `orientation` overlay, and an in-page assistant driving
 the same six tools. It imports the SDK **by package name**, so a broken export
 fails there rather than after publish.
@@ -365,8 +365,8 @@ meaningful regions that the text index cannot read. See the
 | Lane | How to get it | Default? |
 |---|---|---|
 | Inline lexical BM25 | `createNaviquest()` | Yes |
-| Worker lexical | `{ worker: true }` or demo `?worker=1` | No — scheduling, not a faster index |
-| Hybrid (BM25 + int8 dense) | `{ worker: true, dense: true \| 'eager' }` or demo `?dense=1` | No — needs weights under `packages/demo-app/public/model/` |
+| Worker lexical | `{ worker: true }` or demo `?worker=1` | No. This changes scheduling, not index speed. |
+| Hybrid (BM25 + int8 dense) | `{ worker: true, dense: true \| 'eager' }` or demo `?dense=1` | No. It needs weights under `packages/demo-app/public/model/`. |
 
 Exact matching accompanies BM25 in both lexical lanes. The dense lane uses a
 static int8 Model2Vec table; it performs row lookup, pooling, and cosine scoring
@@ -423,14 +423,14 @@ three modules almost everything imports; each folder below is one concern.
 
 | Root file | Role |
 |---|---|
-| `index.ts` | Lifecycle, freshness, WebMCP `register()`, public API. Package entry — `package.json`, `vite.config.ts` and `tsconfig.json` all name this path |
+| `index.ts` | Lifecycle, freshness, WebMCP `register()`, public API. Package entry. `package.json`, `vite.config.ts`, and `tsconfig.json` all name this path. |
 | `worker.ts` | Worker entry for the off-thread retrieval lane |
 | `config.ts` | Every judgement tunable, overridable with `createNaviquest({ tuning })` |
 | `types.ts` | The projection and index shapes the subsystems share |
-| `async.ts` | `Awaitable` and `then()` — the sync-or-promise seam. A leaf so the lifecycle can hold it without pulling retrieval in with it |
+| `async.ts` | `Awaitable` and `then()`. The sync-or-promise seam is a leaf, so the lifecycle can hold it without pulling in retrieval. |
 | `webmcp.d.ts` | Platform types (the proposal ships none) |
 
-### `page/` — reading the document
+### `page/`: reading the document
 
 | File | Role |
 |---|---|
@@ -443,9 +443,9 @@ three modules almost everything imports; each folder below is one concern.
 | `modality.ts` | Top-layer and modal detection |
 | `page-text.ts` | The one reading-order text derivation |
 | `language.ts` | Page language and script |
-| `highlight.ts` | CSS Custom Highlight — `::highlight(naviquest-hit)` |
+| `highlight.ts` | CSS Custom Highlight: `::highlight(naviquest-hit)` |
 
-### `retrieval/` — index and search (lazy; loads with `tools/`)
+### `retrieval/`: index and search (lazy; loads with `tools/`)
 
 | File | Role |
 |---|---|
@@ -453,9 +453,9 @@ three modules almost everything imports; each folder below is one concern.
 | `segment.ts` | Landmark → heading → containment → window |
 | `text.ts` | `Intl.Segmenter` tokenizer and stemmer |
 | `bm25.ts` / `lexical-index.ts` / `exact.ts` / `ranking.ts` / `dense.ts` | Rankers both lanes share |
-| `answer.ts` | The one sentence in a passage that answers — extractive, no model |
+| `answer.ts` | The one sentence in a passage that answers. Extractive, no model. |
 
-### `ai/` — Chrome built-in AI adapters
+### `ai/`: Chrome built-in AI adapters
 
 | File | Role |
 |---|---|
@@ -464,7 +464,7 @@ three modules almost everything imports; each folder below is one concern.
 | `answerer.ts` / `verifier.ts` | Prompt API region reading and answer verification |
 | `summarizer.ts` / `translator.ts` / `image-describer.ts` | Summarizer, Translator and multimodal adapters |
 
-### `tools/` — the agent-facing surface (lazy chunk)
+### `tools/`: the agent-facing surface (lazy chunk)
 
 | File | Role |
 |---|---|

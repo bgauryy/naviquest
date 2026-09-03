@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><title>Riverside services — with embeds</title></head>
+<head><meta charset="utf-8"><title>Riverside services; with embeds</title></head>
 <body>
 <!-- REGRESSION FIXTURE (2026-09-03). The install script runs on every new
      document, so a page with iframes registers the six tool NAMES once per
      frame. invokeWebMCP used to demand exactly one match and threw
-     "resolved to N frames" on every call — which broke every tool on any real
+     "resolved to N frames" on every call; which broke every tool on any real
      page with an embed (react.dev, vuejs.org, measured in eval/research).
      The host now addresses the MAIN frame and treats sub-frame registrations as
      noise. The sub-frames here deliberately carry DECOY text so a regression

@@ -25,8 +25,8 @@ Load when unsure which Chrome DevTools Protocol domain/method to use. Why: choos
 | device/geo/network emulation | `Emulation.setDeviceMetricsOverride`, `Emulation.setTouchEmulationEnabled`, `Emulation.setGeolocationOverride` (call `Browser.grantPermissions({permissions:['geolocation']})` first), `Network.setUserAgentOverride`, `Network.emulateNetworkConditions` |
 | perf metrics | `Performance.*` + browser `performance` APIs |
 | a11y | `Accessibility.getFullAXTree` with bounded depth |
-| structured page issues (quirks mode, mixed content, deprecations, cookie/CORS problems) | `Audits.enable` + `Audits.issueAdded` — more reliable than scraping console text |
-| full DOM+style+layout in one call | `DOMSnapshot.captureSnapshot({computedStyles, includeDOMRects: true})` — a whole-page structural extract, much cheaper than looping `Runtime.evaluate` + `getBoundingClientRect` per element; does not replace per-element stability polling when reflow timing matters |
+| structured page issues (quirks mode, mixed content, deprecations, cookie/CORS problems) | `Audits.enable` + `Audits.issueAdded`; more reliable than scraping console text |
+| full DOM+style+layout in one call | `DOMSnapshot.captureSnapshot({computedStyles, includeDOMRects: true})`; a whole-page structural extract, much cheaper than looping `Runtime.evaluate` + `getBoundingClientRect` per element; does not replace per-element stability polling when reflow timing matters |
 | heap snapshot for leak investigation | `HeapProfiler.enable` + `HeapProfiler.takeHeapSnapshot`; collect chunks via `HeapProfiler.addHeapSnapshotChunk` |
 
 If a method is unavailable, load `references/recovery.md`; Chrome CDP changes across versions.

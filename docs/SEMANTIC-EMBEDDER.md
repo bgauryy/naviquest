@@ -17,7 +17,7 @@ and the [development protocol](../DEV.md).
 
 ---
 
-## 1. Status — measured, not remembered
+## 1. Status; measured, not remembered
 
 Live check: the Chrome skill's **`scripts/cdp-checks/api-probe.mjs`**, launched
 with `AIEmbeddingsAPI,AIEmbeddingsAPIForWorkers`. Chrome 152, macOS,
@@ -25,14 +25,14 @@ with `AIEmbeddingsAPI,AIEmbeddingsAPIForWorkers`. Chrome 152, macOS,
 
 | Fact | Result |
 |---|---|
-| `window.SemanticEmbedder`, stock Chrome | **absent** — off by default |
+| `window.SemanticEmbedder`, stock Chrome | **absent**; off by default |
 | Chrome flag | `chrome://flags#semantic-embedder-api` |
 | Derived Chromium features | `AIEmbeddingsAPI`, `AIEmbeddingsAPIForWorkers` |
 | `window.SemanticEmbedder`, flagged | **present** |
 | Static surface | `availability(options)`, `create(options)` |
 | Instance surface | `embed(input, { taskType, signal })`, `destroy` |
-| `availability()` | **`downloadable`** — model not present |
-| **Dedicated worker exposure** | **`function`** — exposed off-thread |
+| `availability()` | **`downloadable`**; model not present |
+| **Dedicated worker exposure** | **`function`**; exposed off-thread |
 | Task type | A per-`embed()` option, not a `create()` option |
 | Result | `embeddings[].values` as `Float32Array`; no model metadata or token statistics |
 | Permissions Policy | Temporarily reuses `language-model`; Chromium has a TODO for a dedicated policy |
@@ -87,11 +87,10 @@ createNaviquest({ worker: true, dense: true, denseProvider: 'browser' })
   → retrieval: 'hybrid'   existing response contract
 ```
 
-Kept verbatim: **`topK()`** takes a `Float32Array` query against an int8 corpus —
-the shape `embed()` returns. **int8 quantization** — `dense.ts` § 2 measures cosine
+Kept verbatim: **`topK()`** takes a `Float32Array` query against an int8 corpus; the shape `embed()` returns. **int8 quantization**; `dense.ts` § 2 measures cosine
 against f32 at mean 0.999969 / worst 0.999924 over 544 real chunks, so storing the
 raw `Float32Array` doubles memory for nothing. **RRF fusion, dense never
-alone** — `dense.ts` § 3: Reciprocal Rank Fusion scores each document by
+alone**; `dense.ts` § 3: Reciprocal Rank Fusion scores each document by
 Σ 1/(k + rank) across the BM25 and dense rankings (k = 60) and re-sorts by the sum,
 so neither list's top rank dominates; a stronger model is a reason to re-measure
 the floor, not drop it.

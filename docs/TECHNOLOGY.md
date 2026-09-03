@@ -24,8 +24,7 @@ document and reachable roots
 
 **This boundary is the product, not a temporary limitation.** From page
 JavaScript, Naviquest can't be a faithful screenshot API, trusted input
-dispatcher, browser-computed AX reader, or cross-origin frame inspector —
-Playwright or Chrome DevTools supplies those; Naviquest supplies the compact
+dispatcher, browser-computed AX reader, or cross-origin frame inspector; Playwright or Chrome DevTools supplies those; Naviquest supplies the compact
 target, evidence, state, box, and declared coverage gap. Chrome documents
 `document.modelContext.registerTool` as the WebMCP imperative registration
 surface; WebMCP is tab-bound and origin-scoped, not a replacement for server-side
@@ -48,7 +47,7 @@ MCP. See the [WebMCP overview](https://developer.chrome.com/docs/ai/webmcp) and
 | `scheduler.yield()` with timer fallback | Splits long projection work so large pages don't monopolize the main thread. | `requestIdleCallback` is Window-only, absent from the worker scheduling chain. |
 | Mutation, slot, toggle, frame, URL, viewport, semantic observation signals | Detects different classes of page change and reports bounded deltas or explicit degradation. | No single event observes property-only state, URL-less view changes, shadow assignment, and frame navigation. |
 | CSS Custom Highlight API | Marks retrieved evidence without wrappers or host DOM changes. | DOM mutation for highlighting invalidates addresses, triggers observers, and disturbs the host app. |
-| Chrome Prompt API (`LanguageModel`, incl. multimodal image input) | Powers three opt-in, fail-open on-device readers: the answer **verifier** (does this extractive sentence answer the question?), the **answer-from-region** reader, and the **multimodal opaque-region describer** — `describe_app({ opaque: true, describe: true })` reads a `<canvas>` chart or unlabeled `<img>` (`ai/image-describer.ts`). | Lexical selection can't tell "answers the question" from "on-topic but wrong", and text can't read a canvas. Download-gated and Window-only, so every use fails open to the deterministic path. |
+| Chrome Prompt API (`LanguageModel`, incl. multimodal image input) | Powers three opt-in, fail-open on-device readers: the answer **verifier** (does this extractive sentence answer the question?), the **answer-from-region** reader, and the **multimodal opaque-region describer**; `describe_app({ opaque: true, describe: true })` reads a `<canvas>` chart or unlabeled `<img>` (`ai/image-describer.ts`). | Lexical selection can't tell "answers the question" from "on-topic but wrong", and text can't read a canvas. Download-gated and Window-only, so every use fails open to the deterministic path. |
 | Chrome Summarizer API | Optionally reduces long grounded responses after retrieval while preserving addresses and exact source recovery. | Generated text is lossy, stays on the page `Window`, skips short input, and never replaces deterministic evidence by default. |
 | Dynamic `import()`, esbuild, Terser | Registers small schemas eagerly, loads the answer engine on first use, emits publishable JS and declarations, enforces the bundle budget. | Shipping raw TypeScript or eager-loading the full engine pushes compatibility and startup cost to every host page. |
 | Strict TypeScript | Keeps the public SDK, six schemas, worker messages, and demo consumers aligned before publishing. | Runtime tool input still needs guards because WebMCP schemas are semantic hints, not validators. |
@@ -86,7 +85,7 @@ stays a browser-companion capability.
 ## International text
 
 [`Intl.Segmenter`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Segmenter)
-provides locale-sensitive word and sentence boundaries — why Japanese, Chinese,
+provides locale-sensitive word and sentence boundaries; why Japanese, Chinese,
 Thai, and other space-free scripts stay searchable; the same tokenizer runs for
 indexing and queries. `Intl.DisplayNames` builds language-name affordance evidence
 from ISO codes instead of an English word list. Unicode normalization and
@@ -107,7 +106,7 @@ The SDK constructs one standard ESM module worker with
 [Web Workers](https://developer.mozilla.org/docs/Web/API/Web_Workers_API/Using_web_workers)
 can't access the DOM, enforcing the division: projection and address resolution
 stay on the page thread; pure retrieval can leave it. The dense worker uses
-`fetch()`, the Cache API, and Web Locks — cache storage avoids re-downloading
+`fetch()`, the Cache API, and Web Locks; cache storage avoids re-downloading
 unchanged weights, a per-URL lock stops two SDK instances racing the same
 download, and `navigator.connection.saveData` disables warming under reduced-data
 requests. Missing cache or lock support degrades to an ordinary fetch; lexical
@@ -128,7 +127,7 @@ viewport resize, and font-loading checks for changes that don't arrive as useful
 mutation records.
 
 `_etag` plus `since` compares delivered payloads; `_observation` plus
-`changesSince` compares compact semantic snapshots at tool-call time — catching
+`changesSince` compares compact semantic snapshots at tool-call time; catching
 current focus and property-only state, but reporting an interval rather than
 claiming which action caused a change. Histories and returned suffixes are
 bounded and declare omissions. Observation cursors are namespaced per SDK
@@ -141,8 +140,8 @@ address.
 
 ## Addresses and highlighting
 
-An `Address` is a semantic description—landmark, heading path, role, accessible
-name, row context, ordinal, peer count—not a stored DOM pointer. Resolution
+An `Address` is a semantic description; landmark, heading path, role, accessible
+name, row context, ordinal, peer count; not a stored DOM pointer. Resolution
 re-runs a strict ladder against the current page and returns `AMBIGUOUS` or
 `NOT_FOUND` instead of picking a plausible wrong node. Native link metadata comes
 from the resolved live `HTMLAnchorElement` or `HTMLAreaElement`, so `<base>`,
@@ -167,7 +166,7 @@ build measured 28.46 kB gzip eager and 4.39 kB for the optional worker; the lazy
 chunks are reported individually because their loading conditions differ.
 
 The gate moved from 29,000 to 29,500 that day to pay for the phrasing fold in
-`project.ts`, then to 30.2 kB across three further same-day batches — ~200 bytes
+`project.ts`, then to 30.2 kB across three further same-day batches; ~200 bytes
 above the ceiling. Lowering it to 29,200 was paid for by making the agent-facing
 tool metadata lazy: the six names stay eager in `tool-names.ts`, while titles,
 descriptions, and JSON Schemas load with the answer engine, so `register()` and
@@ -191,8 +190,8 @@ Chrome's [Summarizer API](https://developer.chrome.com/docs/ai/summarizer-api)
 is an implemented optional response stage, not a retrieval or grounding
 dependency. Pass `summarize: true` to a content-bearing tool. The lazy `tools.ts`
 graph owns `summarizer.ts`; after the grounded response returns, the summary
-service sends only redacted authored text to one cached browser session — never
-DOM, elements, addresses, state, scores, form values, or worker data — and starts
+service sends only redacted authored text to one cached browser session; never
+DOM, elements, addresses, state, scores, form values, or worker data; and starts
 a model download only during active user activation.
 
 On success, the response labels generated text as lossy and preserves grounding

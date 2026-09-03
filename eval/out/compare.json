@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-03T18:37:27.823Z",
+  "measuredAt": "2026-09-03T19:45:40.790Z",
   "estimator": "chars/4",
   "rows": [
     {
@@ -9,17 +9,17 @@
       "hop": null,
       "arms": {
         "playwright": {
-          "tokens": 10077,
+          "tokens": 10079,
           "answered": true,
           "calls": 1
         },
         "playwright+naviquest": {
-          "tokens": 1955,
+          "tokens": 1970,
           "answered": true,
           "calls": 2
         },
         "naviquest-only": {
-          "tokens": 1955,
+          "tokens": 1970,
           "answered": true,
           "calls": 2
         }
@@ -37,12 +37,12 @@
           "calls": 1
         },
         "playwright+naviquest": {
-          "tokens": 756,
+          "tokens": 772,
           "answered": true,
           "calls": 1
         },
         "naviquest-only": {
-          "tokens": 756,
+          "tokens": 772,
           "answered": true,
           "calls": 1
         }
@@ -63,12 +63,12 @@
           "calls": 2
         },
         "playwright+naviquest": {
-          "tokens": 1244,
+          "tokens": 1276,
           "answered": true,
           "calls": 2
         },
         "naviquest-only": {
-          "tokens": 1674,
+          "tokens": 1709,
           "answered": false,
           "calls": 2
         }
@@ -81,17 +81,17 @@
       "hop": "open the Response interface reference",
       "arms": {
         "playwright": {
-          "tokens": 23800,
+          "tokens": 23801,
           "answered": true,
           "calls": 2
         },
         "playwright+naviquest": {
-          "tokens": 1419,
+          "tokens": 1451,
           "answered": true,
           "calls": 2
         },
         "naviquest-only": {
-          "tokens": 649,
+          "tokens": 664,
           "answered": false,
           "calls": 2
         }

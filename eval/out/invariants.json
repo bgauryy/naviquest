@@ -1,5 +1,5 @@
 {
-  "probedAt": "2026-09-03T18:51:53.192Z",
+  "probedAt": "2026-09-03T19:45:06.076Z",
   "origin": "https://developer.mozilla.org",
   "toolsExercised": [
     "agentic_content",
@@ -175,7 +175,7 @@
       "page": "hub",
       "tool": "resolve_address",
       "label": "resolve_address:find_on_page",
-      "tokens": 1722,
+      "tokens": 1726,
       "budget": 2000
     },
     {
@@ -294,7 +294,7 @@
       "page": "summarizer",
       "tool": "describe_app",
       "label": "describe_app:opaque",
-      "tokens": 475,
+      "tokens": 474,
       "budget": 700
     },
     {
@@ -455,7 +455,7 @@
       "page": "prompt",
       "tool": "describe_app",
       "label": "describe_app:opaque",
-      "tokens": 475,
+      "tokens": 474,
       "budget": 700
     },
     {

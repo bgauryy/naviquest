@@ -1,0 +1,490 @@
+{
+  "probedAt": "2026-09-03T18:51:53.192Z",
+  "origin": "https://developer.mozilla.org",
+  "toolsExercised": [
+    "agentic_content",
+    "describe_app",
+    "find_on_page",
+    "locate_control",
+    "query_selector",
+    "resolve_address"
+  ],
+  "retrieval": [
+    {
+      "id": "Q1",
+      "found": true,
+      "via": "resolve_address(expand)"
+    },
+    {
+      "id": "Q2",
+      "found": true,
+      "via": "resolve_address(expand)"
+    },
+    {
+      "id": "Q3",
+      "found": true,
+      "via": "resolve_address(expand)"
+    },
+    {
+      "id": "Q4",
+      "found": true,
+      "via": "find_on_page"
+    },
+    {
+      "id": "Q5",
+      "found": true,
+      "via": "find_on_page(continuation)"
+    },
+    {
+      "id": "Q6",
+      "found": true,
+      "via": "find_on_page"
+    }
+  ],
+  "worstBudgetPressure": [
+    {
+      "page": "summarizer",
+      "label": "find_on_page:Q2",
+      "tokens": 1193,
+      "budget": 1200,
+      "pctOfBudget": 99
+    },
+    {
+      "page": "summarizer",
+      "label": "describe_app",
+      "tokens": 876,
+      "budget": 900,
+      "pctOfBudget": 97
+    },
+    {
+      "page": "hub",
+      "label": "query_selector:actions",
+      "tokens": 1160,
+      "budget": 1200,
+      "pctOfBudget": 97
+    },
+    {
+      "page": "prompt",
+      "label": "describe_app",
+      "tokens": 870,
+      "budget": 900,
+      "pctOfBudget": 97
+    },
+    {
+      "page": "summarizer",
+      "label": "query_selector:actions",
+      "tokens": 1159,
+      "budget": 1200,
+      "pctOfBudget": 97
+    },
+    {
+      "page": "prompt",
+      "label": "query_selector:actions",
+      "tokens": 1159,
+      "budget": 1200,
+      "pctOfBudget": 97
+    }
+  ],
+  "violations": [],
+  "calls": [
+    {
+      "page": "hub",
+      "tool": "describe_app",
+      "label": "describe_app",
+      "tokens": 867,
+      "budget": 900
+    },
+    {
+      "page": "hub",
+      "tool": "agentic_content",
+      "label": "agentic_content",
+      "tokens": 950,
+      "budget": 2000
+    },
+    {
+      "page": "hub",
+      "tool": "query_selector",
+      "label": "query_selector:actions",
+      "tokens": 1160,
+      "budget": 1200
+    },
+    {
+      "page": "hub",
+      "tool": "query_selector",
+      "label": "query_selector:structure",
+      "tokens": 954,
+      "budget": 1200
+    },
+    {
+      "page": "hub",
+      "tool": "query_selector",
+      "label": "query_selector:scopes",
+      "tokens": 427,
+      "budget": 1200
+    },
+    {
+      "page": "hub",
+      "tool": "query_selector",
+      "label": "query_selector:main+text",
+      "tokens": 519,
+      "budget": 1200
+    },
+    {
+      "page": "hub",
+      "tool": "query_selector",
+      "label": "query_selector:body+text",
+      "tokens": 520,
+      "budget": 1200
+    },
+    {
+      "page": "hub",
+      "tool": "query_selector",
+      "label": "query_selector:article+text",
+      "tokens": 127,
+      "budget": 1200
+    },
+    {
+      "page": "hub",
+      "tool": "query_selector",
+      "label": "query_selector:page1",
+      "tokens": 461,
+      "budget": 1200
+    },
+    {
+      "page": "hub",
+      "tool": "query_selector",
+      "label": "query_selector:page2",
+      "tokens": 469,
+      "budget": 1200
+    },
+    {
+      "page": "hub",
+      "tool": "locate_control",
+      "label": "locate_control:search",
+      "tokens": 226,
+      "budget": 600
+    },
+    {
+      "page": "hub",
+      "tool": "find_on_page",
+      "label": "find_on_page:title",
+      "tokens": 548,
+      "budget": 1200
+    },
+    {
+      "page": "hub",
+      "tool": "resolve_address",
+      "label": "resolve_address:find_on_page",
+      "tokens": 1722,
+      "budget": 2000
+    },
+    {
+      "page": "hub",
+      "tool": "resolve_address",
+      "label": "resolve_address:find_on_page",
+      "tokens": 141,
+      "budget": 2000
+    },
+    {
+      "page": "hub",
+      "tool": "describe_app",
+      "label": "describe_app:opaque",
+      "tokens": 599,
+      "budget": 700
+    },
+    {
+      "page": "summarizer",
+      "tool": "describe_app",
+      "label": "describe_app",
+      "tokens": 876,
+      "budget": 900
+    },
+    {
+      "page": "summarizer",
+      "tool": "agentic_content",
+      "label": "agentic_content",
+      "tokens": 883,
+      "budget": 2000
+    },
+    {
+      "page": "summarizer",
+      "tool": "query_selector",
+      "label": "query_selector:actions",
+      "tokens": 1159,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "query_selector",
+      "label": "query_selector:structure",
+      "tokens": 953,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "query_selector",
+      "label": "query_selector:scopes",
+      "tokens": 427,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "query_selector",
+      "label": "query_selector:main+text",
+      "tokens": 519,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "query_selector",
+      "label": "query_selector:body+text",
+      "tokens": 520,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "query_selector",
+      "label": "query_selector:article+text",
+      "tokens": 127,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "query_selector",
+      "label": "query_selector:page1",
+      "tokens": 460,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "query_selector",
+      "label": "query_selector:page2",
+      "tokens": 468,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "locate_control",
+      "label": "locate_control:search",
+      "tokens": 226,
+      "budget": 600
+    },
+    {
+      "page": "summarizer",
+      "tool": "find_on_page",
+      "label": "find_on_page:title",
+      "tokens": 1088,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "resolve_address",
+      "label": "resolve_address:find_on_page",
+      "tokens": 185,
+      "budget": 2000
+    },
+    {
+      "page": "summarizer",
+      "tool": "resolve_address",
+      "label": "resolve_address:find_on_page",
+      "tokens": 185,
+      "budget": 2000
+    },
+    {
+      "page": "summarizer",
+      "tool": "describe_app",
+      "label": "describe_app:opaque",
+      "tokens": 475,
+      "budget": 700
+    },
+    {
+      "page": "summarizer",
+      "tool": "find_on_page",
+      "label": "find_on_page:Q1",
+      "tokens": 1022,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "resolve_address",
+      "label": "resolve_address:Q1",
+      "tokens": 1059,
+      "budget": 2000
+    },
+    {
+      "page": "summarizer",
+      "tool": "find_on_page",
+      "label": "find_on_page:Q2",
+      "tokens": 1193,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "resolve_address",
+      "label": "resolve_address:Q2",
+      "tokens": 1059,
+      "budget": 2000
+    },
+    {
+      "page": "summarizer",
+      "tool": "find_on_page",
+      "label": "find_on_page:Q3",
+      "tokens": 857,
+      "budget": 1200
+    },
+    {
+      "page": "summarizer",
+      "tool": "resolve_address",
+      "label": "resolve_address:Q3",
+      "tokens": 202,
+      "budget": 2000
+    },
+    {
+      "page": "summarizer",
+      "tool": "resolve_address",
+      "label": "resolve_address:Q3",
+      "tokens": 1059,
+      "budget": 2000
+    },
+    {
+      "page": "summarizer",
+      "tool": "find_on_page",
+      "label": "find_on_page:Q4",
+      "tokens": 1016,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "describe_app",
+      "label": "describe_app",
+      "tokens": 870,
+      "budget": 900
+    },
+    {
+      "page": "prompt",
+      "tool": "agentic_content",
+      "label": "agentic_content",
+      "tokens": 863,
+      "budget": 2000
+    },
+    {
+      "page": "prompt",
+      "tool": "query_selector",
+      "label": "query_selector:actions",
+      "tokens": 1159,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "query_selector",
+      "label": "query_selector:structure",
+      "tokens": 953,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "query_selector",
+      "label": "query_selector:scopes",
+      "tokens": 427,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "query_selector",
+      "label": "query_selector:main+text",
+      "tokens": 519,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "query_selector",
+      "label": "query_selector:body+text",
+      "tokens": 520,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "query_selector",
+      "label": "query_selector:article+text",
+      "tokens": 127,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "query_selector",
+      "label": "query_selector:page1",
+      "tokens": 460,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "query_selector",
+      "label": "query_selector:page2",
+      "tokens": 468,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "locate_control",
+      "label": "locate_control:search",
+      "tokens": 226,
+      "budget": 600
+    },
+    {
+      "page": "prompt",
+      "tool": "find_on_page",
+      "label": "find_on_page:title",
+      "tokens": 1085,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "resolve_address",
+      "label": "resolve_address:find_on_page",
+      "tokens": 415,
+      "budget": 2000
+    },
+    {
+      "page": "prompt",
+      "tool": "resolve_address",
+      "label": "resolve_address:find_on_page",
+      "tokens": 415,
+      "budget": 2000
+    },
+    {
+      "page": "prompt",
+      "tool": "describe_app",
+      "label": "describe_app:opaque",
+      "tokens": 475,
+      "budget": 700
+    },
+    {
+      "page": "prompt",
+      "tool": "find_on_page",
+      "label": "find_on_page:Q5",
+      "tokens": 937,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "resolve_address",
+      "label": "resolve_address:Q5",
+      "tokens": 344,
+      "budget": 2000
+    },
+    {
+      "page": "prompt",
+      "tool": "find_on_page",
+      "label": "find_on_page:Q5:continuation",
+      "tokens": 1145,
+      "budget": 1200
+    },
+    {
+      "page": "prompt",
+      "tool": "find_on_page",
+      "label": "find_on_page:Q6",
+      "tokens": 636,
+      "budget": 1200
+    }
+  ]
+}

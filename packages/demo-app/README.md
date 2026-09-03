@@ -15,10 +15,9 @@ The page imports the SDK by package name (`naviquest`). The build first builds t
 Import the repository from GitHub with these settings:
 
 - **Framework Preset:** Vite
-- **Root Directory:** `packages/demo-app`
-- **Include source files outside of the Root Directory:** enabled (Vercel enables this by default for current projects)
+- **Root Directory:** `./` (the repository root)
 
-Do not point Vercel at the repository-level `dist/demo` directory. The project-local [`vercel.json`](./vercel.json) runs `yarn build` and publishes `out`, relative to the selected Root Directory. That build includes all five HTML routes, files from `public/`, generated assets, the Naviquest SDK, and its worker.
+The repository-level [`vercel.json`](../../vercel.json) runs `yarn build` and publishes `packages/demo-app/out`. Keeping the repository root lets Vercel build the `naviquest` workspace dependency without an outside-root exception. The generated deployment includes all five HTML routes, files from `public/`, assets, the Naviquest SDK, and its worker.
 
 Query flags:
 

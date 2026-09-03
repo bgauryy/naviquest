@@ -49,7 +49,7 @@ const NON_EMPTY_STRING_OR_LIST = {
 export const TOOL_SPECS = [
   {
     name: 'describe_app', title: 'Orient on page',
-    description: 'Use first: map this page’s sections, views, coverage, and vocabulary. For a page report, follow `pagination.next`, then resolve only relevant returned addresses. For a site graph, use agentic_content for same-origin destinations, navigate, repeat, and track visited URLs. Facts → find_on_page; inputs/actions → query_selector; a job → locate_control. After acting, pass `_observation` as `changesSince`.',
+    description: 'Use when the page is unfamiliar or its current scope is uncertain. Returns a compact map of sections, views, vocabulary, and coverage. Next: choose a content search, a control lookup, or cross-page discovery from the gap; do not page headings solely to enumerate them. After an action, use `_observation` as `changesSince`.',
     inputSchema: { type: 'object', properties: {
       opaque: { type: 'boolean', description: 'Boxes of elements the text index cannot read (canvas, unlabeled images), not the orientation.' },
       describe: { type: 'boolean', description: 'With `opaque:true`, read each canvas/image region with an on-device model (`description`). Slow — use a small `limit`. Fail-open where no model exists.' },
@@ -63,7 +63,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'find_on_page', title: 'Search page',
-    description: 'Search page content, not controls. Treat `answer` as evidence, not verified truth. Expand a `textIsExcerpt` address with resolve_address. For navigation set `goal` and follow `nextCalls`; other pages → agentic_content. If incomplete, copy `pagination.next`.',
+    description: 'Use for a fact, explanation, or passage on this page; not for a control or exhaustive inventory. Returns ranked evidence and an optional answer. Expand an excerpt only when it leaves a material gap. For a job use locate_control; for another page use agentic_content.',
     inputSchema: { type: 'object', properties: {
       query: { type: 'string', minLength: 1, description: 'Content, not a control.' },
       goal: { type: 'string', minLength: 1, description: '`read` default; `navigate` requests an action.' },
@@ -75,7 +75,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'locate_control', title: 'Find a control',
-    description: 'Find a live control or link by job; content → find_on_page. Use `recommended` or refine candidates, then resolve_address immediately before the host acts. If incomplete, copy `pagination.next`.',
+    description: 'Use for a specific user job, not a label guess or a page-wide inventory. Returns ranked live controls/links and refinements when intent is ambiguous. Resolve the chosen address immediately before the host acts. Page only while the job remains unresolved.',
     inputSchema: { type: 'object', properties: {
       description: { type: 'string', minLength: 1, description: 'Control job, not guessed label.' },
       limit: { ...PAGE_LIMIT, default: 4 }, offset: PAGE_OFFSET, revision: NUMERIC_REVISION,
@@ -87,7 +87,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'resolve_address', title: 'Resolve address', readOnlyHint: false,
-    description: 'Ground an address immediately before acting, or expand a region. It returns fresh state, viewport box, navigation, and a last-resort selector. Incomplete region text/control pages expose `pagination.next`; call it before claiming completeness. Never reuse a box. Follow failure hints.',
+    description: 'Use with an address already returned by another tool: ground a control before an action, or expand a region when its excerpt is insufficient. Returns fresh state, navigation, box, and readable region evidence. Never reuse a box; follow a next page only if omitted text or controls affect the decision.',
     inputSchema: { type: 'object', properties: {
       address: ADDRESS_INPUT,
       scrollIntoView: { type: 'boolean', description: 'Move before measuring.' },
@@ -98,7 +98,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'query_selector', title: 'List or inspect by semantics/CSS',
-    description: 'Exact inventory or known CSS, not relevance. Use `actions`/`forms` to report all visible inputs and controls, `structure` for content regions, and `scopes` for inspectable DOM. Follow `pagination.next` or report the remainder. Indexed rows return an address for resolve_address; outside the projection, rows return `address:null` and a best-effort selector. Job → locate_control; question → find_on_page.',
+    description: 'Use for known CSS or an inventory the user explicitly needs; not as a default orientation step. `actions` and `forms` can be large, so one job should use locate_control. Returns bounded matching rows. Request only fields needed; page only when omitted rows could change the answer.',
     inputSchema: { type: 'object', properties: {
       view: { type: 'string', enum: [...QUERY_VIEWS] },
       selector: { type: 'string', minLength: 1, description: 'Known CSS.' },
@@ -109,7 +109,7 @@ export const TOOL_SPECS = [
       name: { type: 'string', minLength: 1, description: 'Copied exact accessible name; actions only.' },
       heading: { type: 'string', minLength: 1, description: 'Copied exact heading; structure only.' },
       frames: { type: 'boolean', description: 'Follow readable frames; default true.' },
-      fields: { type: ['array', 'null'], uniqueItems: true, items: { type: 'string', enum: [...QS_FIELDS] } },
+      fields: { type: ['array', 'null'], uniqueItems: true, description: 'Return only evidence needed for the next decision: usually name and address; add state, text, or box only when they matter.', items: { type: 'string', enum: [...QS_FIELDS] } },
       reason: REASON,
     }, oneOf: [
       { required: ['view'], not: { required: ['selector'] } },
@@ -118,7 +118,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'agentic_content', title: 'Agent resources',
-    description: 'Build a same-origin site graph: `list`/`find` discovers resources and live page links. For each `liveUrl`, the host navigates, then calls describe_app and page tools there; track visited URLs and report unvisited/truncated destinations. Pass `resourceUrl` to this tool\'s read intent. This page → find_on_page.',
+    description: 'Use for same-origin resources or a cross-page graph; not for facts already on this page. `list`/`find` returns bounded live links and resource handles. Navigate only destinations relevant to the user’s goal, retain source/destination/purpose, and report unvisited or truncated scope.',
     inputSchema: { type: 'object', properties: {
       intent: { type: 'string', enum: ['list', 'read', 'find'] },
       query: { type: 'string' },

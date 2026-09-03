@@ -101,7 +101,7 @@ const naviquest = await createNaviquest({
   dense: useDense ? 'eager' : false,
   ...(useDense && denseFlag !== '1' ? { denseBase: denseFlag } : {}),
   orientation: {
-    purpose: 'Map CityDesk for a new user: provide a same-origin site graph, page map, user journeys, visible inputs/actions, and explicit coverage gaps. Prefer structure and addresses; read prose only when needed to fill a material gap.',
+    purpose: 'Help users understand CityDesk by resolving the next material uncertainty with the smallest useful evidence. Build graphs or journeys only when relevant, prefer targeted controls over broad inventories, and state coverage gaps.',
     tasks: [
       { name: 'Start a rebate application', locate: '#startReturn' },
       { name: 'Renew a parking permit', locate: '#parking-renew' },

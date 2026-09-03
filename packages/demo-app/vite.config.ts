@@ -16,7 +16,7 @@ export default defineConfig({
   worker: { format: 'es' },
   build: {
     // The Vercel project is rooted at the repository and publishes root `out`.
-    outDir: '../../out',
+    outDir: 'out',
     emptyOutDir: true,
     target: 'es2023',
     rollupOptions: {

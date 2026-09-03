@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Libraries — CityDesk</title>
+<link rel="icon" href="/favicon.svg">
+  <script type="module" crossorigin src="/assets/main-B1MBNF0t.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-2lc4XFLk.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header>
+  <strong>CityDesk</strong>
+  <nav aria-label="Main">
+    <a href="/">Services</a>
+    <a href="/parking.html">Parking</a>
+    <a href="/libraries.html" aria-current="page">Libraries</a>
+    <a href="/notices.html">Notices</a>
+    <a href="/workspace.html">My City</a>
+    <a href="/#apps">My applications</a>
+  </nav>
+</header>
+
+<main id="main" class="page-wide">
+  <h1>City libraries</h1>
+  <p>Five branches, one catalogue. Join with proof of address. Fines pause while an item is reserved for you at another branch.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><b>84,200</b> items in the catalogue</div>
+    <div class="stat-card"><b>12,110</b> active members</div>
+    <div class="stat-card"><b>20p</b> daily fine after the grace day</div>
+    <div class="stat-card"><b>3 weeks</b> standard loan</div>
+  </div>
+
+  <section id="hours" aria-labelledby="hours-h">
+    <h2 id="hours-h">Opening hours</h2>
+    <p>Riverside Library is closed Sunday 6 September 2026 for boiler works. Holds can still be collected from Northgate that day.</p>
+    <table class="data">
+      <thead>
+        <tr><th>Branch</th><th>Mon–Wed</th><th>Thu–Fri</th><th>Saturday</th><th>Sunday</th><th>PCs</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Riverside (central)</td><td>09:00–19:00</td><td>09:00–19:00</td><td>10:00–17:00</td><td>12:00–16:00</td><td>18</td></tr>
+        <tr><td>Northgate</td><td>10:00–18:00</td><td>10:00–18:00</td><td>10:00–13:00</td><td>closed</td><td>8</td></tr>
+        <tr><td>Eastfield</td><td>09:30–17:30</td><td>09:30–19:00</td><td>10:00–16:00</td><td>closed</td><td>6</td></tr>
+        <tr><td>Hillcrest</td><td>13:00–18:00</td><td>10:00–18:00</td><td>10:00–13:00</td><td>closed</td><td>4</td></tr>
+        <tr><td>Parkside (children’s)</td><td>09:00–17:00</td><td>09:00–17:00</td><td>09:00–13:00</td><td>closed</td><td>2</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="pcs" aria-labelledby="pcs-h">
+    <h2 id="pcs-h">Public computers</h2>
+    <p>Members get 90 minutes per day. Non-members may book a 30-minute guest session with photo ID. Printing is 10p per side, colour 40p. Filtering is on for under-16 tickets.</p>
+    <form id="pc-book-form">
+      <div class="field">
+        <label for="pc-branch">Branch</label>
+        <select id="pc-branch" name="branch">
+          <option>Riverside</option>
+          <option>Northgate</option>
+          <option>Eastfield</option>
+          <option>Hillcrest</option>
+          <option>Parkside</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="pc-when">Slot</label>
+        <select id="pc-when" name="when">
+          <option>Today 14:00–15:30</option>
+          <option>Today 16:00–17:30</option>
+          <option>Tomorrow 10:00–11:30</option>
+          <option>Tomorrow 13:00–14:30</option>
+        </select>
+      </div>
+      <button type="button" id="book-pc">Book a library PC</button>
+      <p class="sub" id="pc-book-status" role="status">No booking yet.</p>
+    </form>
+  </section>
+
+  <section id="loans" aria-labelledby="loans-h">
+    <h2 id="loans-h">Loans, holds, and fines</h2>
+    <p>The standard loan is three weeks and renews twice unless another member is waiting. A hold costs nothing. Items not collected within seven days of arrival are released to the next person on the list.</p>
+    <p>Overdue fines are 20p per item per day after a one-day grace, capped at £8 per item. Children’s tickets do not accrue fines; lost items are still charged at replacement cost.</p>
+    <p>Digital magazines through PressReader do not count against the physical loan cap of 12 items.</p>
+  </section>
+
+  <section id="events" aria-labelledby="events-h">
+    <h2 id="events-h">What’s on in September</h2>
+    <table class="data">
+      <thead>
+        <tr><th>Date</th><th>Branch</th><th>Event</th><th>Who</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>3 Sep</td><td>Riverside</td><td>Job club — CVs and interviews</td><td>Adults</td></tr>
+        <tr><td>4 Sep</td><td>Parkside</td><td>Rhyme time</td><td>Under 5s</td></tr>
+        <tr><td>6 Sep</td><td>Northgate</td><td>Riverside holds desk (boiler closure)</td><td>All</td></tr>
+        <tr><td>7 Sep</td><td>Eastfield</td><td>Code club</td><td>8–12</td></tr>
+        <tr><td>8 Sep</td><td>Riverside</td><td>Local history: the 1962 dock fire</td><td>Adults</td></tr>
+        <tr><td>10 Sep</td><td>Hillcrest</td><td>Knit and natter</td><td>Adults</td></tr>
+        <tr><td>11 Sep</td><td>Parkside</td><td>Rhyme time</td><td>Under 5s</td></tr>
+        <tr><td>13 Sep</td><td>Riverside</td><td>Saturday cinema: Paddington</td><td>Families</td></tr>
+        <tr><td>15 Sep</td><td>Northgate</td><td>ESOL conversation hour</td><td>Adults</td></tr>
+        <tr><td>17 Sep</td><td>Eastfield</td><td>Board-game evening</td><td>12+</td></tr>
+        <tr><td>20 Sep</td><td>Riverside</td><td>Author: N. K. Marlow reads <em>Quay Stories</em></td><td>Adults</td></tr>
+        <tr><td>22 Sep</td><td>Parkside</td><td>Homework club</td><td>School age</td></tr>
+        <tr><td>24 Sep</td><td>Hillcrest</td><td>Digital helper: phones and scams</td><td>Adults</td></tr>
+        <tr><td>27 Sep</td><td>Riverside</td><td>Family Lego build</td><td>Families</td></tr>
+        <tr><td>29 Sep</td><td>Northgate</td><td>Book group: <em>The Harbour Clock</em></td><td>Adults</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="membership" aria-labelledby="mem-h">
+    <h2 id="mem-h">Joining</h2>
+    <p>Bring one proof of address dated within three months and photo ID. Children under 16 need a parent or guardian. Non-residents who work in the city may join with a payslip. There is no joining fee.</p>
+  </section>
+
+  <section id="catalogue" aria-labelledby="catalogue-h">
+    <h2 id="catalogue-h">Catalogue services</h2>
+    <p>Search the catalogue from any branch, place up to eight holds, and choose a collection branch. Audio and large-print titles can be delivered to a branch twice a week.</p>
+    <div class="workspace-grid">
+      <article class="workspace-card"><h3>Reserve an item</h3><p>Holds are free. You have seven days after an arrival notice to collect.</p><button type="button">Search the catalogue</button></article>
+      <article class="workspace-card"><h3>Digital library</h3><p>Borrow ebooks, audiobooks, magazines, and language courses with your library number and PIN.</p><button type="button">Open digital library</button></article>
+      <article class="workspace-card"><h3>Home delivery</h3><p>Residents who cannot visit because of disability or temporary illness can request monthly delivery.</p><button type="button">Ask about home delivery</button></article>
+    </div>
+  </section>
+
+  <section id="spaces" aria-labelledby="spaces-h">
+    <h2 id="spaces-h">Rooms, equipment, and study space</h2>
+    <table class="data"><thead><tr><th>Branch</th><th>Quiet desks</th><th>Meeting room</th><th>Scanner</th><th>3D printer</th><th>Booking window</th></tr></thead><tbody>
+      <tr><td>Riverside</td><td>42</td><td>up to 18 people</td><td>yes</td><td>yes</td><td>14 days</td></tr>
+      <tr><td>Northgate</td><td>16</td><td>up to 8 people</td><td>yes</td><td>no</td><td>14 days</td></tr>
+      <tr><td>Eastfield</td><td>12</td><td>up to 6 people</td><td>yes</td><td>no</td><td>7 days</td></tr>
+      <tr><td>Hillcrest</td><td>8</td><td>community table</td><td>no</td><td>no</td><td>7 days</td></tr>
+      <tr><td>Parkside</td><td>10</td><td>family room</td><td>no</td><td>no</td><td>7 days</td></tr>
+    </tbody></table>
+  </section>
+
+  <section id="learning" aria-labelledby="learning-h">
+    <h2 id="learning-h">Learning and support</h2>
+    <ul><li>Weekly job club offers CV reviews, interview practice, and basic digital-skills help.</li><li>Digital helpers can assist with phone settings, online forms, and avoiding scams; they cannot give legal or financial advice.</li><li>ESOL conversation groups are free and do not require a library membership.</li><li>Schools may book class visits four weeks ahead through the Riverside learning team.</li></ul>
+  </section>
+</main>
+
+<footer><p>CityDesk is a fictional city portal. Software: <a href="/LICENSE.txt">MIT License</a> © 2026 Naviquest contributors.</p></footer>
+</body>
+</html>

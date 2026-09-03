@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-09-03T19:45:40.790Z",
+  "measuredAt": "2026-09-03T20:18:44.770Z",
   "estimator": "chars/4",
   "rows": [
     {
@@ -9,7 +9,7 @@
       "hop": null,
       "arms": {
         "playwright": {
-          "tokens": 10079,
+          "tokens": 10198,
           "answered": true,
           "calls": 1
         },
@@ -81,7 +81,7 @@
       "hop": "open the Response interface reference",
       "arms": {
         "playwright": {
-          "tokens": 23801,
+          "tokens": 23799,
           "answered": true,
           "calls": 2
         },

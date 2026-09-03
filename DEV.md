@@ -8,16 +8,16 @@
 You MUST Think, then Plan, then implement a named slice, then Review.
 Do NOT invent unrequired layers. Prefer the *simple strong* solution. No duplication, no redundancy, no rigid designs. No hacks, Temp, or "we'll clean it later".
 
-*Execution* — non-negotiable while shipping:
+*Execution*; non-negotiable while shipping:
 
 - *Justify the write*: Before any edit, name why this change must exist. No reason → stop.
 - *Small smart slices*: One chunk sized by blast radius and feedback speed, not file count. Ship it, then the next.
-- *Sharp tools first*: Prefer the cheapest tool that fits — scripts and bulk transforms for mechanical work; model edits for judgment only.
+- *Sharp tools first*: Prefer the cheapest tool that fits; scripts and bulk transforms for mechanical work; model edits for judgment only.
 - *Closed eval loop*: Metric → run → change one thing → re-run. No improvement without a sensor.
 
 ## Think
 
-*Understand the context* — act as a system architect. Code is not a text chunk; it is a living part of a business flow, runtime, and engine.
+*Understand the context*; act as a system architect. Code is not a text chunk; it is a living part of a business flow, runtime, and engine.
 
 - *The Engine & Runtime*: How does this actually execute? Understand the coding engine, dynamic configuration, and host environment.
 - *The Big Picture*: Map upstream/downstream and business intent. Do not invent unverified systems. Cross-check graph · code · stream · dependencies before trusting a single reading.
@@ -41,7 +41,7 @@ Do NOT invent unrequired layers. Prefer the *simple strong* solution. No duplica
 ## Plan
 
 Model, then public surface, then impl. Name the slice, *what is out, the **interface, **touches, and **budget*.
-The first test is that surface, failing. Every option MUST have types, ops, and a test — or it is out.
+The first test is that surface, failing. Every option MUST have types, ops, and a test; or it is out.
 No use case: do NOT start. Do NOT implement until Place, Deps, In, Out, and edge cases are explicitly named.
 
 ## Code
@@ -49,7 +49,7 @@ No use case: do NOT start. Do NOT implement until Place, Deps, In, Out, and edge
 *TDD & Verification.* Assert the outcome and check real results. Drive production's path; do NOT stub the dependency you are proving.
 Unimplemented paths *MUST throw*. Always clean up resources (files, memory). A rebuildable store is a cache: evict, do NOT wipe on load.
 Derive once per identity, persist, read small. Build the new path alongside; delete the old when it is the source.
-Generated code stays generated. Do NOT reach around a boundary. Do NOT hack around a wrong model — fix the model or stop.
+Generated code stays generated. Do NOT reach around a boundary. Do NOT hack around a wrong model; fix the model or stop.
 One slice, justified and verifiable. Follow-up is another. Undocumented incomplete is NOT fine.
 Prefer mechanical tools for mechanical transforms; reserve model edits for decisions.
 
@@ -64,7 +64,7 @@ Lead with the *major*. One decision, one comment. Patch mechanical fixes; ask ab
 
 *Communication Style*: Be coherent, evidence-based, and logical. Explicitly state your trade-off assumptions. Talk like this: "Is there a use case?" / "What does the caller do?" / "You suppose X is ready. It isn't." / "This does not belong here." / "Let's start here." Name the type, field, or function. No essays.
 
-*Planning* — then wait if the model is unsettled:
+*Planning*; then wait if the model is unsettled:
 
 
 Slice: <name>
@@ -74,7 +74,7 @@ In: <what ships>
 Out: <what this will not do>
 Interface: <the surface this slice owns>
 Test: <the failing case on that surface>
-Edges: <empty · absent · concurrent · replay — named, not "later">
+Edges: <empty · absent · concurrent · replay; named, not "later">
 Touches: <modules / artifacts>
 Budget/Cost: <memory · infra cost · context window · tokens>
 Agentic: <prompts · schemas · parallel tools · context efficiency · eval loop (metric → run → change → re-run)>
@@ -86,13 +86,13 @@ Resilience: <idempotency · parallel hops · error handling · DLQ>
 Rejected: <alternatives considered and exactly why they were dropped>
 
 
-*Writing* — code. Unimplemented paths MUST throw. Add short, dense comments on sensitive areas. Avoid verbosity. No preamble.
+*Writing*; code. Unimplemented paths MUST throw. Add short, dense comments on sensitive areas. Avoid verbosity. No preamble.
 
 *Reviewing*:
 
 
 Major: <one finding or none>
-Ask: <path> — <one question>
+Ask: <path>; <one question>
 Cut: <what should not exist>
 Blast: <what else moves if this is wrong>
 Security/Ops: <missing telemetry · unsafe data · missing flags · unvalidated LLM output>

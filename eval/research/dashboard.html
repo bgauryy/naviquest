@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Naviquest — research race</title>
+<title>Naviquest; research race</title>
 <style>
   /* Four zones, in the order a viewer needs them: what is happening now →
      the score → the evidence → the raw trail (folded away).
@@ -153,8 +153,8 @@
 <header>
   <h1>Naviquest · research race</h1>
   <span class="sub">two real agents · the same questions · six WebMCP tools vs a plain <code>fetch</code></span>
-  <span id="chrome" class="pill">—</span>
-  <span id="ai" class="pill">ai: —</span>
+  <span id="chrome" class="pill">; </span>
+  <span id="ai" class="pill">ai:; </span>
   <span id="conn" class="pill">connecting…</span>
 </header>
 
@@ -168,11 +168,11 @@
       <div class="stage" id="st-done"><span class="idx">4</span> results</div>
     </div>
     <div class="phase" id="phase">waiting for the agents…</div>
-    <div class="narr" id="narr">Both agents get the identical question list. Every tool call is charged the same way — <code>chars/4</code> of the full result — and streams here over a WebSocket.</div>
+    <div class="narr" id="narr">Both agents get the identical question list. Every tool call is charged the same way; <code>chars/4</code> of the full result; and streams here over a WebSocket.</div>
     <div class="aibanner" id="aibanner">
       <b>On-device AI is ON.</b> Chrome scopes its Gemini Nano session to each document, so every page opened pays a one-off
       <b>~25 s model warm-up</b> before the answer lanes engage; a warm query then answers in ~2.6 s. The slower clock is
-      <b>model setup, not answer latency</b> — and that warm-up query costs tokens too.
+      <b>model setup, not answer latency</b>; and that warm-up query costs tokens too.
     </div>
     <div class="lanes">
       <div class="lane nq">
@@ -212,12 +212,12 @@
     <h2 class="zone">scoreboard</h2>
     <h3 id="board-head">running…</h3>
     <div class="tiles">
-      <div class="tile tie"><span class="whotag" id="t-qual-who"></span><div class="big" id="t-qual">—</div><div class="cap">answer quality</div><div class="note" id="t-qual-note">blind judge · no gold key</div></div>
-      <div class="tile win"><span class="whotag">naviquest</span><div class="big" id="t-tokens">—</div><div class="cap">fewer tokens</div><div class="note" id="t-tokens-note">per question, median</div></div>
-      <div class="tile win"><span class="whotag">naviquest</span><div class="big" id="t-ctx">—</div><div class="cap">smaller peak context</div><div class="note" id="t-ctx-note">largest single payload</div></div>
-      <div class="tile cost"><span class="whotag" id="t-speed-who">baseline</span><div class="big" id="t-speed">—</div><div class="cap">faster wall-clock</div><div class="note" id="t-speed-note">the honest trade-off</div></div>
+      <div class="tile tie"><span class="whotag" id="t-qual-who"></span><div class="big" id="t-qual">; </div><div class="cap">answer quality</div><div class="note" id="t-qual-note">blind judge · no gold key</div></div>
+      <div class="tile win"><span class="whotag">naviquest</span><div class="big" id="t-tokens">; </div><div class="cap">fewer tokens</div><div class="note" id="t-tokens-note">per question, median</div></div>
+      <div class="tile win"><span class="whotag">naviquest</span><div class="big" id="t-ctx">; </div><div class="cap">smaller peak context</div><div class="note" id="t-ctx-note">largest single payload</div></div>
+      <div class="tile cost"><span class="whotag" id="t-speed-who">baseline</span><div class="big" id="t-speed">; </div><div class="cap">faster wall-clock</div><div class="note" id="t-speed-note">the honest trade-off</div></div>
     </div>
-    <div class="oneliner" id="oneliner">Bounded per-tool retrieval keeps every result flat (~1–2k tokens) no matter how big the page is, so the agent's context never scales with the page. The trade-off is honest — one <code>fetch</code> is a single round-trip.</div>
+    <div class="oneliner" id="oneliner">Bounded per-tool retrieval keeps every result flat (~1–2k tokens) no matter how big the page is, so the agent's context never scales with the page. The trade-off is honest; one <code>fetch</code> is a single round-trip.</div>
   </section>
 
   <!-- ══ 3. EVIDENCE ══ -->
@@ -240,7 +240,7 @@
   <details>
     <summary>every tool call, as it happened</summary>
     <div class="trail" id="activity"></div>
-    <div class="foot">One row per call; chips are the tools the agent chose, in order. Amber marks a call over 5 s — on AI runs that is the on-device model warm-up, not answer time. Streamed over a WebSocket; the page never polls, and the server replays the whole run to a tab opened late.</div>
+    <div class="foot">One row per call; chips are the tools the agent chose, in order. Amber marks a call over 5 s; on AI runs that is the on-device model warm-up, not answer time. Streamed over a WebSocket; the page never polls, and the server replays the whole run to a tab opened late.</div>
   </details>
 </main>
 
@@ -250,7 +250,7 @@ const fmt=n=>Math.round(n||0).toLocaleString('en-US');
 const esc=s=>String(s==null?'':s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
 const pre={naviquest:'nq',baseline:'base'};
 const cssId=s=>String(s).replace(/[^a-z0-9]/gi,'_');
-const PREVIEW=3;   // answers shown before "show all" — the list is 20 pairs long
+const PREVIEW=3;   // answers shown before "show all"; the list is 20 pairs long
 let state,groups,plan,findings,verdicts,lastNow,idleTimer,judged,expanded,aiOn=false;
 
 function reset(){
@@ -271,14 +271,14 @@ function renderStats(a){const s=state[a],p=pre[a];
   $(`${p}-ctx`).textContent=fmt(s.ctx);$(`${p}-calls`).textContent=fmt(s.calls);$(`${p}-ms`).textContent=fmt(s.ms);}
 function renderProg(a){const p=pre[a],s=state[a],total=(plan&&plan.findings)||0;
   $(`${p}-pfill`).style.width=(total?100*Math.min(s.done,total)/total:0)+'%';
-  $(`${p}-pnum`).textContent=`${s.done} of ${total||'—'}`;
+  $(`${p}-pnum`).textContent=`${s.done} of ${total||'; '}`;
   $(`${p}-ptok`).textContent=fmt(s.tokens)+' tok';}
 function setNow(a,now){const p=pre[a],el=$(`${p}-q`);
   const allDone=plan&&plan.findings&&state[a].done>=plan.findings;
   if(now){lastNow[a]=now;el.className='qtext';el.textContent=now.task;
     $(`${p}-site`).textContent=now.site||'';
     const b=$(`${p}-phase`);b.textContent=now.phase||'';b.className='badge'+(now.phase?' '+now.phase:'');
-  }else if(allDone){el.className='qtext done';el.innerHTML='<span class="doneflag">done</span> — answered all '+plan.findings+' questions';
+  }else if(allDone){el.className='qtext done';el.innerHTML='<span class="doneflag">done</span>; answered all '+plan.findings+' questions';
     $(`${p}-site`).textContent='';const b=$(`${p}-phase`);b.textContent='';b.className='badge';
   }else if(lastNow[a]){ // a blank lane reads as "stopped"; it is between findings
     el.className='qtext done';el.innerHTML='<span class="doneflag">just finished</span> '+esc(lastNow[a].task);
@@ -294,7 +294,7 @@ function renderSame(){
   const shared=nq.filter(k=>findings.baseline.has(k)).length;
   const onlyNq=nq.length-shared,onlyBs=bs.length-shared,total=(plan&&plan.findings)||0;
   const clean=!onlyNq&&!onlyBs;
-  b.textContent=clean?`identical — all ${shared} of ${total||'?'} questions answered by BOTH agents, verbatim`
+  b.textContent=clean?`identical; all ${shared} of ${total||'?'} questions answered by BOTH agents, verbatim`
     :`${shared} answered by both · ${onlyNq} only naviquest · ${onlyBs} only baseline (still running)`;
   box.className='same'+(clean?'':' bad');
 }
@@ -318,13 +318,13 @@ function markCell(site,arm,phase,status){
   const cell=$('cell-'+cssId(site));
   if(cell&&[...cell.querySelectorAll('.sq')].every(s=>s.classList.contains('nqdone')||s.classList.contains('basedone')))cell.classList.add('complete');
 }
-function x(a,b){return(a&&b)?(Math.max(a,b)/Math.max(1,Math.min(a,b))).toFixed(1)+'×':'—';}
+function x(a,b){return(a&&b)?(Math.max(a,b)/Math.max(1,Math.min(a,b))).toFixed(1)+'×':'; ';}
 /** Live tiles before the judge lands, so the board is never four dashes on camera. */
 function renderTilesLive(){
   if(judged)return;const S=state;
   if(S.naviquest.tokens&&S.baseline.tokens){
     $('t-tokens').textContent=x(S.naviquest.tokens,S.baseline.tokens);
-    $('t-tokens-note').textContent='running total — median lands after judging';}
+    $('t-tokens-note').textContent='running total; median lands after judging';}
   if(S.naviquest.ctx&&S.baseline.ctx){
     $('t-ctx').textContent=x(S.naviquest.ctx,S.baseline.ctx);
     $('t-ctx-note').innerHTML=fmt(S.naviquest.ctx)+' vs '+fmt(S.baseline.ctx)+' tok';}
@@ -336,11 +336,11 @@ function renderTilesLive(){
 function narrate(o){
   const who=o.arm==='naviquest'?'<b>naviquest</b>':'<b>baseline</b>';
   if(o.ev==='finding'){
-    $('narr').innerHTML=`${who} finished a ${o.phase||''} question on <span class="t">${esc(o.site)}</span> — <b>${fmt(o.tokens)}</b> tokens, ${o.calls} call${o.calls===1?'':'s'}, largest payload held <b>${fmt(o.contextHeld)}</b> tok.`;
+    $('narr').innerHTML=`${who} finished a ${o.phase||''} question on <span class="t">${esc(o.site)}</span>; <b>${fmt(o.tokens)}</b> tokens, ${o.calls} call${o.calls===1?'':'s'}, largest payload held <b>${fmt(o.contextHeld)}</b> tok.`;
     return;}
   const tools=(o.tool||'').split('→').filter(Boolean).map(t=>`<span class="t">${esc(t)}</span>`).join(' → ');
-  const slow=o.ms>5000?` <span style="color:var(--amber)">(${(o.ms/1000).toFixed(1)} s — on-device model warm-up, not answer time)</span>`:'';
-  $('narr').innerHTML=`${who} called ${tools||'a tool'} on <span class="t">${esc(o.site||'—')}</span> — charged <b>${fmt(o.tokens)}</b> tokens in ${fmt(o.ms)} ms.${slow}`;
+  const slow=o.ms>5000?` <span style="color:var(--amber)">(${(o.ms/1000).toFixed(1)} s; on-device model warm-up, not answer time)</span>`:'';
+  $('narr').innerHTML=`${who} called ${tools||'a tool'} on <span class="t">${esc(o.site||'; ')}</span>; charged <b>${fmt(o.tokens)}</b> tokens in ${fmt(o.ms)} ms.${slow}`;
   if(!judged){$('phase').textContent='agents are racing';stage('race');}
 }
 function groupEl(site){
@@ -358,7 +358,7 @@ function onCall(o){
   s.ctx=Math.max(s.ctx,o.contextHeld!=null?o.contextHeld:o.tokens);
   if(o.task){setNow(o.arm,{site:o.site,task:o.task,phase:o.phase});markCell(o.site,o.arm,o.phase,'active');}
   renderStats(o.arm);renderProg(o.arm);renderTilesLive();narrate(o);
-  const g=groupEl(o.site||'—');g.tok[o.arm]=(g.tok[o.arm]||0)+(o.tokens||0);
+  const g=groupEl(o.site||'; ');g.tok[o.arm]=(g.tok[o.arm]||0)+(o.tokens||0);
   const row=document.createElement('div');row.className='step';
   const slow=o.ms>5000?' slow':'';
   const chips=(o.tool||'').split('→').filter(Boolean).map(t=>`<span class="chip${slow}">${esc(t)}</span>`).join('');
@@ -366,7 +366,7 @@ function onCall(o){
     `<div><div class="chips">${chips||'<span class="chip">call</span>'}</div><div class="foot" style="margin:2px 0 0">${esc((o.note||'').slice(0,110))}</div></div>`+
     `<div class="cost num"><b>${fmt(o.tokens)}</b> tok · ${fmt(o.ms)}ms</div>`;
   g.el.appendChild(row);
-  const gh=$('gh-'+cssId(o.site||'—'));if(gh)gh.textContent=`nq ${fmt(g.tok.naviquest||0)} · base ${fmt(g.tok.baseline||0)} tok`;
+  const gh=$('gh-'+cssId(o.site||'; '));if(gh)gh.textContent=`nq ${fmt(g.tok.naviquest||0)} · base ${fmt(g.tok.baseline||0)} tok`;
 }
 function onFinding(o){
   const s=state[o.arm];if(!s)return;absorb(o);
@@ -375,7 +375,7 @@ function onFinding(o){
   markCell(o.site,o.arm,o.phase,'done');
   setNow(o.arm,null);renderStats(o.arm);renderProg(o.arm);renderTilesLive();renderSame();narrate(o);renderPairs();
   if(plan&&plan.findings&&state.naviquest.done>=plan.findings&&state.baseline.done>=plan.findings&&!judged){
-    $('phase').textContent='both agents finished — judging next';
+    $('phase').textContent='both agents finished; judging next';
     $('board-head').textContent='Cost is in. Quality lands when the blind judge returns.';stage('judge');}
 }
 function vdOf(arm,site,task){
@@ -420,17 +420,17 @@ function renderJudge(ratings){
       return n?`<div class="qseg ${k}" style="flex:${n} 0 0" title="${k}: ${n}">${n}</div>`:'';}).join('');
     $(`qs-${p}`).innerHTML=`<b>${r.qualityScore}</b> / ${r.tasks} correct`;
   }
-  $('phase').textContent='judged — results above';stage('done');
+  $('phase').textContent='judged; results above';stage('done');
 }
 function renderVerdict(v,ratings){
   if(!v)return;judged=true;
   const nqQ=(v.quality_naviquest||'').split(' ')[0],bsQ=(v.quality_baseline||'').split(' ')[0];
   const tie=nqQ===bsQ;
-  $('board-head').textContent=tie?'Same answers — for a fraction of the context'
+  $('board-head').textContent=tie?'Same answers; for a fraction of the context'
     :'Answer quality and context cost, side by side';
   $('t-qual').textContent=tie?'TIE':`${nqQ} · ${bsQ}`;
   $('t-qual-who').textContent=tie?'both arms':'nq · base';
-  $('t-qual-note').innerHTML=tie?`both <b>${nqQ}</b> — blind judge, no gold key`:`naviquest ${nqQ} · baseline ${bsQ}`;
+  $('t-qual-note').innerHTML=tie?`both <b>${nqQ}</b>; blind judge, no gold key`:`naviquest ${nqQ} · baseline ${bsQ}`;
   $('t-tokens').textContent=(v.tokens_x_per_task_median||v.tokens_x_sum)+'×';
   $('t-tokens-note').innerHTML=`per question, median${v.tokens_x_per_task_iqr?` · IQR ${v.tokens_x_per_task_iqr[0]}–${v.tokens_x_per_task_iqr[1]}×`:''}<br>${v.tokens_x_sum}× overall`;
   $('t-ctx').textContent=v.context_held_x+'×';
@@ -449,13 +449,13 @@ function renderVerdict(v,ratings){
 }
 function setEnv(o){
   if(typeof o.connectedOverCDP==='boolean'){
-    $('ai').textContent='ai: '+(o.aiMode||'—');
+    $('ai').textContent='ai: '+(o.aiMode||'; ');
     $('ai').className='pill '+(o.aiMode==='on'?'warn':'');
     if(o.aiMode==='on'){$('aibanner').style.display='block';aiOn=true;}}
   if(o.chromeVersion){$('chrome').textContent=o.chromeVersion;$('chrome').className='pill on';stage('race');}
   if(o.plan){plan=o.plan;buildGrid();for(const a of ['naviquest','baseline'])renderProg(a);
     if(plan.sites&&plan.sites.length)
-      $('oneliner').innerHTML=`Bounded per-tool retrieval keeps every result flat (~1–2k tokens) no matter how big the page is, so the agent's context never scales with the page. The trade-off is honest — one <code>fetch</code> is a single round-trip. This run: <b>${plan.findings} questions across ${plan.sites.length} sites</b>, single run, POC scale.`;}
+      $('oneliner').innerHTML=`Bounded per-tool retrieval keeps every result flat (~1–2k tokens) no matter how big the page is, so the agent's context never scales with the page. The trade-off is honest; one <code>fetch</code> is a single round-trip. This run: <b>${plan.findings} questions across ${plan.sites.length} sites</b>, single run, POC scale.`;}
 }
 function connect(){
   const ws=new WebSocket(`ws://${location.host}`);

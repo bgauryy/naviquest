@@ -1,8 +1,8 @@
-# EVIDENCE — why web agents actually fail
+# EVIDENCE; why web agents actually fail
 
 > **Figures here are historical.** The harness that produced them was removed from this repository. See [AGENTS.md](../AGENTS.md).
 
-Evidence and limits — and rules governing citation. Written after contradicting an earlier framing; see § 5.
+Evidence and limits; and rules governing citation. Written after contradicting an earlier framing; see § 5.
 
 Design decisions are in [ARCHITECTURE.md](../ARCHITECTURE.md) and [TECHNOLOGY.md](./TECHNOLOGY.md).
 
@@ -37,7 +37,7 @@ We had claimed smaller observations make agents more accurate. **The literature 
 
 ## 2. The real target: the execution gap
 
-Given **human-authored high-level plans**, executors reach only **38.5% plan completion and 36.4% final success.** — arXiv 2603.14248
+Given **human-authored high-level plans**, executors reach only **38.5% plan completion and 36.4% final success.**; arXiv 2603.14248
 
 **Hand the agent a perfect plan and it still fails ~64% of the time.** From 104 Mind2Web-Live instances:
 
@@ -66,7 +66,7 @@ Corroborated independently:
 | Pop-ups introduced | 54.3% → 43.0% |
 | Network/server faults | WebVoyager **42.0% → 2.0%** (−95%) |
 
-Cosmetic barely matters; **semantic change is devastating.** Stable, explicitly named affordances—accessibility semantics as addressing substrate—target this exactly.
+Cosmetic barely matters; **semantic change is devastating.** Stable, explicitly named affordances; accessibility semantics as addressing substrate; target this exactly.
 
 Two corollary results:
 - **Agents click malicious pop-ups 86.6–98.2%.** Reporting `modal: true` and flagging inert controls is a direct mitigation.
@@ -92,7 +92,7 @@ Ordered by evidence strength × impact. **Modes 1–3 are entangled:** grounding
 | 10 | **Observation-pruning ceiling** | moderate | Recall@50 85.3–88.9% → target absent 11–15% |
 | 11 | Exploration deficit | moderate, unquantified | 28–41% wrong-branch |
 | 12 | Non-text content | weak, partly negative | vision ≈2.3× overall; OCR mildly hurts |
-| 13 | Icon-only / unlabelled controls | weak—prevalence only | ~30.6% of pages; no measured failure rate |
+| 13 | Icon-only / unlabelled controls | weak; prevalence only | ~30.6% of pages; no measured failure rate |
 | 14 | Stale element refs | weak for agents | 54.3→49.8% |
 
 **Caveats:** Only WebVoyager publishes a complete distribution; everything else is a point measurement. Absolute rates incomparable across benchmarks. Most predate frontier models; 2026 studies use small models, so rates may overstate today's.
@@ -104,14 +104,14 @@ Ordered by evidence strength × impact. **Modes 1–3 are entangled:** grounding
 | Claim | Status |
 |---|---|
 | "Smaller observations make agents more accurate" | **Retracted.** D2Snap p = 0.47 |
-| "Large context actively degrading web agents" | **Extrapolation only—position bias unmeasured on DOMs** |
-| "WebArena: 50% reasoning / 30% ambiguity / 10% info loss" | **Misattributed—absent from both texts; originates in evaluator-model analysis** |
+| "Large context actively degrading web agents" | **Extrapolation only; position bias unmeasured on DOMs** |
+| "WebArena: 50% reasoning / 30% ambiguity / 10% info loss" | **Misattributed; absent from both texts; originates in evaluator-model analysis** |
 | "Context rot degrades accuracy 30%+" | **No primary source** |
 | "Task success 78% → 42% with degraded accessibility tree" | **Fabricated** |
 | Icon-only buttons cause agent failure | **Prevalence verified, effect size never measured** |
 | Chart/canvas-specific agent failure rates | **Do not exist in any benchmark** |
 | Set-of-mark prompting effective for web agents | **Contested:** SeeAct says not effective; VisualWebArena +1.3pt |
-| WebAIM empty-button percentage | Sources conflict on year (27.7% vs 30.6%)—confirm before quoting |
+| WebAIM empty-button percentage | Sources conflict on year (27.7% vs 30.6%); confirm before quoting |
 
 Peer-review status unconfirmed for 2026 arXiv preprints; read from arXiv, not published proceedings.
 
@@ -127,7 +127,7 @@ Acceptance criteria for publication:
 - **WebArena publishes no quantified failure taxonomy.** The "50% / 30% / 10%" figure is misattributed and must not appear.
 - Vectara's NAACL 2025 result tested embedding-similarity chunking, not structural chunking.
 - Anthropic's 35% contextual-retrieval gain is LLM-generated per chunk; our structural prefix captures some, not all.
-- Issue #91: Community Group issue closed `not planned` with `backlog` label—not a formal W3C rejection.
+- Issue #91: Community Group issue closed `not planned` with `backlog` label; not a formal W3C rejection.
 - Any number not measured ourselves is cited with source and regime. Gutenberg ≠ web pages.
 - Icon-only-button failure rates are prevalence-only. Do not assert a causal agent-failure rate.
 - For current claims, run the named sensor in [EVAL.md](./EVAL.md), record date and browser, distinguish deterministic checks from live-site observations.
@@ -141,9 +141,9 @@ Acceptance criteria for publication:
 
 ---
 
-## 8. Failure modes of the retrieval layer itself — measured 2026-08-28
+## 8. Failure modes of the retrieval layer itself; measured 2026-08-28
 
-§ 4 ranks how agents fail. This section records how a retrieval layer built to help them fails—first-party numbers on 13 live sites, the only figures in this document not from a paper.
+§ 4 ranks how agents fail. This section records how a retrieval layer built to help them fails; first-party numbers on 13 live sites, the only figures in this document not from a paper.
 
 | Retrieval failure mode | Before fix | After |
 |---|---|---|
@@ -154,7 +154,7 @@ Acceptance criteria for publication:
 | **Internally inconsistent observation** | react.dev: `describe_app` reported new view, `find_on_page` served old | freshness checked on every tool call |
 | **Expensive cost report** | `list_opaque_regions` reported 499 regions on one Wikipedia article | 43 |
 
-**The generalisable lesson:** every failure passed 76/76 checks on a demo page. A demo cannot be evidence for a tool whose purpose is other people's pages—clean headings and labelled controls keep broken paths green. Held-out live sites are the only honest gate.
+**The generalisable lesson:** every failure passed 76/76 checks on a demo page. A demo cannot be evidence for a tool whose purpose is other people's pages; clean headings and labelled controls keep broken paths green. Held-out live sites are the only honest gate.
 
 ## Sources
 

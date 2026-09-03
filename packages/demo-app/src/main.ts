@@ -1,4 +1,4 @@
-import { createNaviquest, resolveModelContext } from 'naviquest';
+import { createNaviquest, resolveModelContext, type NaviquestOrientation } from 'naviquest';
 
 function need<T extends Element = HTMLElement>(id: string): T {
   const found = document.getElementById(id);
@@ -98,11 +98,6 @@ const pageDirectory = {
   '/workspace.html': { title: 'My City service history', noun: 'resident task', route: '/workspace.html#tasks', action: 'Review task route' },
 } as const;
 const directory = pageDirectory[location.pathname as keyof typeof pageDirectory];
-const directoryTask = directory ? [{
-  name: `${directory.title}: 650 rendered records`,
-  locate: '#service-directory',
-  how: 'This first-party directory has 650 fictional records; search live page content only for a specific record or status.',
-}] : [];
 if (directory) {
   const section = document.createElement('section');
   section.id = 'service-directory';
@@ -120,6 +115,59 @@ if (directory) {
   document.querySelector('main')?.append(section);
 }
 
+// First-party hints complement the live page model. Keep each selector on the
+// route where it exists: authored.tasks is intentionally capped and stale
+// selectors are omitted by the SDK before an agent can act on them.
+const pageOrientation: Record<string, NaviquestOrientation> = {
+  '/': {
+    purpose: 'CityDesk home brings together resident services, eligibility guidance, and routes to parking, libraries, public notices, and a private workspace.',
+    tasks: [
+      { name: 'Start or continue a home energy rebate application', locate: '#startReturn', how: 'Opens the rebate application journey.' },
+      { name: 'Submit the rebate form after a human reviews it', locate: '#claim-submit', how: 'The form asks for resident and property details.' },
+      { name: 'Report a broken street light', locate: '#report-light', how: 'Starts the street-light reporting path.' },
+    ],
+    constraints: ['Do not infer eligibility or submit a form. Keep payment and personal details with the resident.'],
+  },
+  '/parking.html': {
+    purpose: 'CityDesk parking explains permit zones, prices, renewal rules, visitor permits, enforcement, and permit-related services.',
+    tasks: [
+      { name: 'Renew a resident parking permit', locate: '#parking-renew', how: 'Review the permit reference and vehicle registration before the resident continues.' },
+    ],
+    constraints: ['Do not make a payment or renew a permit without the resident confirming the details.'],
+  },
+  '/libraries.html': {
+    purpose: 'CityDesk libraries covers branch hours, public computers, loans, events, membership, catalogue services, and study spaces.',
+    tasks: [
+      { name: 'Book a public computer', locate: '#book-pc', how: 'Review the branch and time slot before the resident confirms a booking.' },
+    ],
+    constraints: ['Do not create a booking without the resident confirming the branch and time slot.'],
+  },
+  '/notices.html': {
+    purpose: 'CityDesk notices publishes planning and traffic notices, consultations, licensing registers, local alerts, and guidance for public comments.',
+    tasks: [
+      { name: 'Subscribe to the city-notice digest', locate: '#subscribe-notices', how: 'Review the email and postcode with the resident before subscribing.' },
+    ],
+    constraints: ['Do not subscribe an email address or submit a public comment without the resident confirming it.'],
+  },
+  '/workspace.html': {
+    purpose: 'My City is a resident workspace for active applications, household details, reminders, saved places, service history, and local notifications.',
+    tasks: [
+      { name: 'Show open resident tasks', locate: '#workspace-filter', how: 'Filters the visible task list to items needing attention.' },
+      { name: 'Prepare a resident service summary', locate: '#workspace-export', how: 'Prepares a concise on-page summary.' },
+    ],
+    constraints: ['Treat workspace details as private. Do not change household information or preferences without the resident confirming it.'],
+  },
+};
+
+const orientation: NaviquestOrientation = {
+  ...(pageOrientation[location.pathname] ?? {
+    purpose: 'CityDesk provides local government services and resident information.',
+    tasks: [],
+    constraints: ['Do not submit a form or change personal information without the resident confirming it.'],
+  }),
+  tasks: pageOrientation[location.pathname]?.tasks ?? [],
+};
+
 // CityDesk is a WebMCP provider. It registers Naviquest and never calls any of
 // its six tools: an external agent owns invocation, tool input, and responses.
 const flags = new URLSearchParams(location.search);
@@ -132,18 +180,7 @@ const naviquest = await createNaviquest({
   worker: useWorker,
   dense: useDense ? 'eager' : false,
   ...(useDense && denseFlag !== '1' ? { denseBase: denseFlag } : {}),
-  orientation: {
-    purpose: 'Help users understand CityDesk by resolving the next material uncertainty with the smallest useful evidence. Build graphs or journeys only when relevant, prefer targeted controls over broad inventories, and state coverage gaps.',
-    tasks: [
-      { name: 'Start a rebate application', locate: '#startReturn' },
-      { name: 'Renew a parking permit', locate: '#parking-renew' },
-      { name: 'Report a street light', locate: '#report-light' },
-      { name: 'Book a library PC', locate: '#book-pc' },
-      { name: 'Subscribe to city notices', locate: '#subscribe-notices' },
-      ...directoryTask,
-    ],
-    constraints: ['Do not submit payment or bank details. Hand off to the human.'],
-  },
+  orientation,
 });
 
 const modelContext = resolveModelContext();

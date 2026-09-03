@@ -1,6 +1,8 @@
 # CityDesk demo
 
-In-page exercise of `naviquest`. This directory is a private app workspace.
+In-page exercise of `naviquest`, a browser-research SDK that a website embeds
+for WebMCP or an automation host injects into an unmodified origin. This
+directory is a private app workspace.
 
 ```bash
 yarn install                    # repository root
@@ -21,8 +23,8 @@ The repository-level [`vercel.json`](../../vercel.json) runs `yarn build` and pu
 
 Query flags:
 
-- `?worker=1` — retrieval in a module worker
-- `?dense=1` — worker plus int8 embeddings, if `public/model/` exists (gitignored)
+- `?worker=1`; retrieval in a module worker
+- `?dense=1`; worker plus int8 embeddings, if `public/model/` exists (gitignored)
 
 CityDesk is a WebMCP **provider**, not an in-page agent: it calls only
 `createNaviquest()` and `register()`. The browser agent invokes the six tools and
@@ -40,6 +42,8 @@ Multi-page portal (same SDK on every route):
 | `/notices.html` | Planning table, traffic orders, consultations, email alerts |
 | `/workspace.html` | Fake resident SPA workspace: tasks, applications, household details, and activity |
 
-Fixtures exist to stress the SDK (closed shadow, recycling list, excluded `[data-private]`, modal, non-text). CityDesk **opts in** to `orientation` and `exclude` as a first-party overlay — that is demo customization, not a requirement. The same six tools navigate any site without them (`yarn eval --live --url …`). Sensors live under [`eval/`](../../eval).
+Fixtures exist to stress the SDK (closed shadow, recycling list, excluded `[data-private]`, modal, non-text). CityDesk **opts in** to `orientation` and `exclude` as a first-party overlay. That metadata makes CityDesk routes and tasks less ambiguous, but it is not a requirement: the same six tools retrieve generic DOM and ARIA evidence on any site (`yarn eval --live --url …`). Naviquest discovers and grounds destinations; the browser host performs navigation and other browser actions.
+
+The demo is not a universal token benchmark. Bounded retrieval can reduce agent context on large, structured pages, while small pages and broad multi-page tasks can favor direct fetch or require more tool calls. Sensors live under [`eval/`](../../eval).
 
 This demonstration is [MIT licensed](../../LICENSE) ([`/LICENSE.txt`](./public/LICENSE.txt) on the running app).

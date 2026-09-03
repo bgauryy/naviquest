@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My City workspace — CityDesk</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header>
+  <strong>CityDesk</strong>
+  <nav aria-label="Main">
+    <a href="/">Services</a>
+    <a href="/parking.html">Parking</a>
+    <a href="/libraries.html">Libraries</a>
+    <a href="/notices.html">Notices</a>
+    <a href="/workspace.html" aria-current="page">My City</a>
+    <a href="/#apps">My applications</a>
+  </nav>
+</header>
+
+<main id="main" class="page-wide workspace">
+  <div class="eyebrow">Resident workspace · fictional account</div>
+  <h1>My City</h1>
+  <p>One place to review active applications, household reminders, saved places, and recent CityDesk activity.</p>
+
+  <nav class="workspace-tabs" aria-label="Workspace sections">
+    <a href="#overview" aria-current="page">Overview</a>
+    <a href="#tasks">Tasks <span>4</span></a>
+    <a href="#applications">Applications <span>3</span></a>
+    <a href="#household">Household</a>
+    <a href="#activity">Activity</a>
+  </nav>
+
+  <section id="overview" aria-labelledby="overview-h">
+    <h2 id="overview-h">At a glance</h2>
+    <div class="stat-grid">
+      <article class="stat-card"><b>4</b><span>tasks need attention</span></article>
+      <article class="stat-card"><b>£45</b><span>parking renewal due 1 April</span></article>
+      <article class="stat-card"><b>2</b><span>library holds ready to collect</span></article>
+      <article class="stat-card"><b>1</b><span>planning notice near your home</span></article>
+    </div>
+    <div class="workspace-grid">
+      <article class="workspace-card priority-card">
+        <div class="card-kicker">Next best action</div>
+        <h3>Finish your energy rebate application</h3>
+        <p>Proof of ownership and household income assessment are still missing. Applications close 30 September 2026.</p>
+        <div class="action-row"><a class="button-link" href="/#claim">Continue application</a><button type="button" id="workspace-remind">Remind me tomorrow</button></div>
+        <p id="workspace-remind-status" class="sub" role="status">No reminder set.</p>
+      </article>
+      <article class="workspace-card">
+        <div class="card-kicker">Local update</div>
+        <h3>Quay Street parking changes</h3>
+        <p>Zone C bays are suspended 8–10 September for water-main works. Zone A bays are available to permit holders without a voucher.</p>
+        <a href="/parking.html#zones">Read the parking update</a>
+      </article>
+    </div>
+  </section>
+
+  <section id="tasks" aria-labelledby="tasks-h">
+    <h2 id="tasks-h">Your tasks</h2>
+    <p>Tasks are ordered by deadline. Completing or dismissing a task changes only this fictional page.</p>
+    <ol class="task-list">
+      <li><input id="task-rebate" type="checkbox"><label for="task-rebate"><b>Upload proof of ownership</b><span>Home energy rebate · due 30 September</span></label><a href="/#claim">Open application</a></li>
+      <li><input id="task-parking" type="checkbox"><label for="task-parking"><b>Check permit renewal details</b><span>Zone C resident permit · renews 1 April</span></label><a href="/parking.html#renew">Open parking</a></li>
+      <li><input id="task-library" type="checkbox"><label for="task-library"><b>Collect two reserved library books</b><span>Riverside Library · hold shelf until 9 September</span></label><a href="/libraries.html#hours">View hours</a></li>
+      <li><input id="task-notice" type="checkbox"><label for="task-notice"><b>Review Harbour Lane planning proposal</b><span>Public comment closes 18 September</span></label><a href="/notices.html#planning">Read notice</a></li>
+    </ol>
+  </section>
+
+  <section id="applications" aria-labelledby="applications-h">
+    <h2 id="applications-h">Applications and requests</h2>
+    <table class="data">
+      <thead><tr><th>Reference</th><th>Service</th><th>Status</th><th>Last updated</th><th>Next step</th></tr></thead>
+      <tbody>
+        <tr><td>RB-2026-4471</td><td>Home energy rebate</td><td><span class="status-chip pending">Draft</span></td><td>2 Sep 2026</td><td>Upload two documents</td></tr>
+        <tr><td>P-88421</td><td>Resident parking permit</td><td><span class="status-chip live">Active</span></td><td>28 Aug 2026</td><td>Renew before 1 April</td></tr>
+        <tr><td>WR-2026-1088</td><td>Bulk waste booking</td><td><span class="status-chip booked">Booked</span></td><td>30 Aug 2026</td><td>Collection: Tue 15 Sep</td></tr>
+        <tr><td>SL-2026-0234</td><td>Street light report</td><td><span class="status-chip review">In review</span></td><td>1 Sep 2026</td><td>Inspection within ten working days</td></tr>
+      </tbody>
+    </table>
+    <div class="action-row"><button type="button" id="workspace-filter">Show only open items</button><button type="button" class="secondary" id="workspace-export">Prepare a summary</button></div>
+    <p id="workspace-action-status" class="sub" role="status">All four items are visible.</p>
+  </section>
+
+  <section id="household" aria-labelledby="household-h">
+    <h2 id="household-h">Household and saved places</h2>
+    <div class="workspace-grid">
+      <article class="workspace-card"><h3>Primary address</h3><p><b>14 Marlow Terrace</b><br>City Centre · BS1 4QH<br>Moved in: 12 February 2026</p><button type="button" id="workspace-address">Review address details</button></article>
+      <article class="workspace-card"><h3>Saved places</h3><ul><li>Riverside Library</li><li>Quay Street parking zone</li><li>Central recycling centre</li><li>Harbour Lane planning area</li></ul><a href="/notices.html#alerts">Change local alerts</a></article>
+      <article class="workspace-card"><h3>Contact preferences</h3><p>Email for deadlines and service changes. No marketing messages.</p><button type="button" id="workspace-preferences">Manage preferences</button></article>
+    </div>
+    <p id="workspace-household-status" class="sub" role="status">Household details are shown for this demo only.</p>
+  </section>
+
+  <section id="activity" aria-labelledby="activity-h">
+    <h2 id="activity-h">Recent activity</h2>
+    <ol class="timeline">
+      <li><time datetime="2026-09-02">2 Sep</time><div><b>Energy rebate application saved</b><p>Reference RB-2026-4471 remains a draft until required documents are added.</p></div></li>
+      <li><time datetime="2026-09-01">1 Sep</time><div><b>Street light report received</b><p>Report SL-2026-0234 was assigned to the highways inspection queue.</p></div></li>
+      <li><time datetime="2026-08-30">30 Aug</time><div><b>Bulk waste collection booked</b><p>Your collection is scheduled for Tuesday 15 September. Put items out by 07:00.</p></div></li>
+      <li><time datetime="2026-08-28">28 Aug</time><div><b>Parking permit renewed</b><p>Permit P-88421 is active in Zone C until 31 March 2027.</p></div></li>
+    </ol>
+  </section>
+</main>
+
+<footer><p>CityDesk is a fictional city portal. Software: <a href="/LICENSE.txt">MIT License</a> © 2026 Naviquest contributors.</p></footer>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

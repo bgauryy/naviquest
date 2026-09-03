@@ -38,6 +38,11 @@ export interface ToolAnnotations {
    *  the spec's own Output Injection mitigation and is not optional for a tool
    *  that hands page text to a model. */
   untrustedContentHint?: boolean;
+  /** If true, the tool triggers a significant real-world or non-reversible
+   *  action (booking a flight, transferring money, etc.).
+   *  Spec IDL: `boolean consequentialHint = false`. None of the six
+   *  Naviquest tools set this — all are observational. */
+  consequentialHint?: boolean;
 }
 
 /** MCP's content envelope. Tool results are `{ content: [{ type, text }] }`. */

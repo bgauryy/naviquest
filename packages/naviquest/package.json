@@ -3,6 +3,11 @@
   "version": "0.1.0",
   "description": "Ask the page, don't dump it. Browser-side WebMCP SDK: six token-budgeted tools for agent navigation and research.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bgauryy/naviquest.git",
+    "directory": "packages/naviquest"
+  },
   "type": "module",
   "sideEffects": false,
   "types": "./dist/index.d.ts",
@@ -22,7 +27,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "prepublishOnly": "node build.ts"
+    "build": "node build.ts",
+    "prepublishOnly": "yarn build"
   },
   "devDependencies": {
     "dom-accessibility-api": "^0.7.1",

@@ -346,7 +346,7 @@ report), plus the visible-Chrome + warm-model variant for AI-on runs:
 | Path | Contents |
 |---|---|
 | `packages/naviquest/` | `naviquest`, the publishable package |
-| `apps/demo/` | CityDesk, the website‑embed demo |
+| `packages/demo-app/` | CityDesk, the website‑embed demo |
 | `eval/` | offline gates + the two-agent research race (`eval/research/`); results in [`eval/RESULTS.md`](./eval/RESULTS.md), how to run in [`eval/README.md`](./eval/README.md) |
 | `skills/naviquest-chrome-devtools/` | the inject over raw CDP, with an offline grader (~12s) |
 

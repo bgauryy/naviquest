@@ -118,7 +118,7 @@ not Naviquest, performs browser input:
 ![The agent calls Naviquest through the browser. Naviquest returns bounded results and addresses, while the host performs browser actions.](../../assets/naviquest-flow.svg)
 
 This directory contains the repository's only publishable package. The
-[CityDesk demo](../../apps/demo), [evaluation sensors](../../eval),
+[CityDesk demo](../demo-app), [evaluation sensors](../../eval),
 [architecture](../../ARCHITECTURE.md), [browser API map](../../docs/TECHNOLOGY.md),
 and [tool wire contract](../../docs/TOOLS.md) document the rest of the system.
 
@@ -325,7 +325,7 @@ yarn install
 yarn dev      # CityDesk on http://localhost:5310
 ```
 
-`apps/demo/` is the worked example of everything above — closed shadow roots,
+`packages/demo-app/` is the worked example of everything above — closed shadow roots,
 `exclude`, a first-party `orientation` overlay, and an in-page assistant driving
 the same six tools. It imports the SDK **by package name**, so a broken export
 fails there rather than after publish.
@@ -342,7 +342,7 @@ read:
 | `locate_control` | Which control performs this job? | Ranked live controls with state, context, confidence, and refinements |
 | `resolve_address` | Can I read or act on this result now? | Full region text, or fresh control state, box, navigation data, and a last-resort selector |
 | `query_selector` | What actions, forms, regions, scopes, or exact CSS matches exist? | Bounded semantic inventories or guarded exact inspection |
-| `agentic_content` | Does the answer live elsewhere on this site? | Same-origin agent resources and verified live-page continuations |
+| `agentic_content` | Does the answer live elsewhere on this site? | Same-origin agent resources and verified live-page pagination |
 
 The normal flow is:
 
@@ -366,7 +366,7 @@ meaningful regions that the text index cannot read. See the
 |---|---|---|
 | Inline lexical BM25 | `createNaviquest()` | Yes |
 | Worker lexical | `{ worker: true }` or demo `?worker=1` | No — scheduling, not a faster index |
-| Hybrid (BM25 + int8 dense) | `{ worker: true, dense: true \| 'eager' }` or demo `?dense=1` | No — needs weights under `apps/demo/public/model/` |
+| Hybrid (BM25 + int8 dense) | `{ worker: true, dense: true \| 'eager' }` or demo `?dense=1` | No — needs weights under `packages/demo-app/public/model/` |
 
 Exact matching accompanies BM25 in both lexical lanes. The dense lane uses a
 static int8 Model2Vec table; it performs row lookup, pooling, and cosine scoring
@@ -485,7 +485,7 @@ Judgement (caps, weights, or vendor selectors) lives in `config.ts` and is overr
 | Resource | Purpose |
 |---|---|
 | [Architecture](../../ARCHITECTURE.md) | End-to-end mechanism, invariants, and module boundaries |
-| [Tool reference](../../docs/TOOLS.md) | Six tool schemas, routing, continuations, and failures |
+| [Tool reference](../../docs/TOOLS.md) | Six tool schemas, routing, pagination, and failures |
 | [Technology map](../../docs/TECHNOLOGY.md) | Browser APIs, feature detection, and platform constraints |
 | [Evaluation](../../docs/EVAL.md) | Deterministic gates, live sensors, and measured evidence |
 | [Testing](../../docs/TESTING.md) | Demo, injection, and live-browser workflows |

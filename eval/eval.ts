@@ -464,7 +464,7 @@ async function laneContracts(browser: Browser) {
       insertedForm.innerHTML = '<input>';
       document.body.prepend(insertedForm);
       await Promise.resolve();
-      const formsStale = await wq.tools.query_selector(formsPage.continuation);
+      const formsStale = await wq.tools.query_selector(formsPage.pagination.next[0].arguments);
 
       let invalidExclude = '';
       try { WQ.createNaviquest({ exclude: ['['] }); }
@@ -1179,8 +1179,8 @@ async function laneInvariants(context: BrowserContext) {
 
       // Pagination integrity on a selector that matches a lot.
       const p1 = await call(label, 'query_selector', { selector: 'a', limit: 5, offset: 0 }, 'query_selector:page1');
-      if (p1?.continuation) {
-        const p2 = await call(label, 'query_selector', p1.continuation, 'query_selector:page2');
+      if (p1?.pagination?.next?.[0]) {
+        const p2 = await call(label, 'query_selector', p1.pagination.next[0].arguments, 'query_selector:page2');
         const first = new Set((p1.results ?? []).map(rowKey));
         const overlap = (p2?.results ?? []).filter((row: unknown) => first.has(rowKey(row)));
         // A continuation that re-serves a row wastes budget; one that jumps past
@@ -1241,8 +1241,8 @@ async function laneInvariants(context: BrowserContext) {
             via = 'resolve_address(expand)';
             if (hit()) break;
           }
-          if (hit() || !resultPage?.continuation) break;
-          resultPage = await call(label, 'find_on_page', resultPage.continuation,
+          if (hit() || !resultPage?.pagination?.next?.[0]) break;
+          resultPage = await call(label, 'find_on_page', resultPage.pagination.next[0].arguments,
             `find_on_page:${question.id}:continuation`);
           via = 'find_on_page(continuation)';
         }

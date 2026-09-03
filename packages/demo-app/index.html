@@ -21,6 +21,7 @@
     <a href="/parking.html">Parking</a>
     <a href="/libraries.html">Libraries</a>
     <a href="/notices.html">Notices</a>
+    <a href="/workspace.html">My City</a>
     <a href="/#apps">My applications</a>
   </nav>
 </header>
@@ -28,6 +29,34 @@
 <main id="main">
   <h1>City services</h1>
   <p>Apply for programmes, check eligibility, and manage your household services.</p>
+
+  <section id="agent-instructions" class="agent-instructions" aria-labelledby="agent-instructions-h">
+    <h2 id="agent-instructions-h">AGENT INSTRUCTIONS</h2>
+    <p><strong>Goal:</strong> map CityDesk for a user who has not seen it. Build a concise, evidence-backed orientation report; do not read every paragraph unless structure leaves a material gap.</p>
+    <ol>
+      <li>Discover same-origin destinations, then build a site graph: <em>source page → destination page → link or control purpose</em>. Visit each distinct application page needed to complete that graph.</li>
+      <li>On each visited page, identify its purpose, main sections, visible forms and important actions, and next useful navigation choices. Prefer structured results and addresses; read detailed regions only when labels and structure cannot answer the question.</li>
+      <li>When a response has <code>pagination.complete: false</code>, follow every relevant <code>pagination.next</code> entry before declaring that scope complete. State unvisited, incomplete, private, excluded, or inaccessible scope.</li>
+      <li>Do not infer eligibility, submit a form, or expose anything in a private region.</li>
+    </ol>
+    <p><strong>Return exactly:</strong> <em>SITE GRAPH</em>; <em>PAGE MAP</em> (purpose; sections; inputs/actions; next choices); <em>USER JOURNEYS</em> (renew parking, book a library PC, receive local alerts, manage a CityDesk task); and <em>COVERAGE</em> (visited/discovered pages and gaps).</p>
+    <p>CityDesk is a fictional demonstration portal. The user’s task is site orientation, not making real-world decisions.</p>
+  </section>
+
+  <section id="resident-dashboard" aria-labelledby="resident-dashboard-h">
+    <h2 id="resident-dashboard-h">Your CityDesk dashboard</h2>
+    <div class="stat-grid">
+      <article class="stat-card"><b>3</b>open requests <a href="#apps">Review applications</a></article>
+      <article class="stat-card"><b>18 Sep</b>next deadline <a href="/notices.html#planning">Planning notice</a></article>
+      <article class="stat-card"><b>Zone C</b>parking permit <a href="/parking.html#renew">Renew permit</a></article>
+      <article class="stat-card"><b>2</b>library holds <a href="/libraries.html#loans">View loans</a></article>
+    </div>
+    <div class="action-row">
+      <a class="button-link" href="/workspace.html">Open My City workspace</a>
+      <a class="button-link secondary" href="#claim">Start a rebate claim</a>
+      <a class="button-link secondary" href="/notices.html#alerts">Manage alerts</a>
+    </div>
+  </section>
 
   <section id="this-week" aria-labelledby="week-h">
     <h2 id="week-h">This week in the city</h2>

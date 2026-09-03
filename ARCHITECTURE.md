@@ -122,7 +122,7 @@ called it `onchange`, not the spec name and not what `webmcp.d.ts` declares):
 ```js
 document.modelContext.registerTool(tool, { signal })  // declare a tool
 document.modelContext.getTools()                      // discover tools
-document.modelContext.executeTool(tool, argsJson)     // invoke one
+document.modelContext.executeTool(tool, inputObject)  // invoke one
 document.modelContext.ontoolchange                    // the tool set moved
 ```
 

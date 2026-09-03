@@ -1,0 +1,19 @@
+{
+  "name": "demo-app",
+  "version": "0.0.0",
+  "private": true,
+  "description": "CityDesk demo — in-page exercise of the naviquest SDK.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "yarn workspace naviquest build && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "naviquest": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^7.0.0"
+  }
+}

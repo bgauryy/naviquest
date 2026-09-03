@@ -13,6 +13,14 @@ import type { AuthoredOrientation } from './orientation.ts';
 // below derive from the agent-facing schema arrays instead of restating them —
 // three hand-spelled copies of the same enum was three chances to drift.
 import type { ORIENTATION_SECTIONS, QS_FIELDS, QUERY_VIEWS } from './tool-specs.ts';
+import type { ToolSpecName } from './tool-names.ts';
+
+/** A common recovery envelope for every response that omitted a stable suffix. */
+export interface PaginationEnvelope {
+  complete: false;
+  /** Call each listed tool with its arguments copied exactly. */
+  next: Array<{ tool: ToolSpecName; arguments: Record<string, unknown> }>;
+}
 
 export interface ToolEnvelope {
   /** Stable cross-tool decision state; tool-specific `status` fields remain for compatibility. */
@@ -26,6 +34,8 @@ export interface ToolEnvelope {
   unchanged?: boolean;
   mode?: string;
   total?: number;
+  /** Present only when this response is incomplete. Never infer completeness from a short list. */
+  pagination?: PaginationEnvelope;
   /** Summarization metadata. Semantic-change counts moved to `changeSummary`
    * so `describe_app({ changesSince, summarize: true })` cannot lose them. */
   summary?: SummaryEnvelope;
@@ -97,12 +107,6 @@ export interface OutlineRow {
 export type OrientationSection = typeof ORIENTATION_SECTIONS[number];
 export type QuerySelectorField = typeof QS_FIELDS[number];
 export type QuerySelectorView = typeof QUERY_VIEWS[number];
-export interface OrientationContinuation {
-  section: OrientationSection;
-  limit: number;
-  offset: number;
-  revision: number;
-}
 export interface DescribeView { title: string; path: string; heading: string | null }
 export interface DescribeCounts { chunks: number; controls: number }
 export interface DescribeVocabulary {
@@ -127,7 +131,6 @@ export interface DescribeAppSuccess extends ToolSuccessEnvelope, DescribeModalSt
   landmarks: string[];
   currentTrail: string[];
   orientationTotals: Record<OrientationSection, number>;
-  continuations?: Partial<Record<OrientationSection, OrientationContinuation>>;
   nonText: Record<string, unknown>;
   structuralQuality: 'good' | 'mixed' | 'low';
   structuralEngagementPct: number;
@@ -149,7 +152,6 @@ export interface DescribeAppSectionSuccess extends ToolSuccessEnvelope {
   offset: number;
   returned: number;
   results: string[] | OutlineRow[];
-  continuation?: OrientationContinuation;
 }
 /** Opaque and semantic-change modes are deliberately open, but they still use
  * the same universal outcome and pagination envelope as every other response. */
@@ -159,7 +161,6 @@ export interface DescribeAppModeSuccess extends ToolSuccessEnvelope {
   total?: number;
   returned?: number;
   truncated?: number;
-  continuation?: Record<string, unknown>;
   _observation?: string;
   unchanged?: boolean;
   mode?: string;
@@ -339,7 +340,6 @@ export interface ResolveRegionSuccess extends ToolSuccessEnvelope {
   revealedBy?: Address | null;
   note?: string;
   truncated?: boolean;
-  continuation?: Address;
   remainingTextChars?: number;
   remainingControls?: number;
 }
@@ -399,7 +399,6 @@ export interface AgenticContentSuccess extends ToolSuccessEnvelope {
   returned?: number;
   truncated?: number;
   linksTruncated?: number;
-  continuation?: AgenticContentInput;
   text?: string;
 }
 export interface AgenticDocument {

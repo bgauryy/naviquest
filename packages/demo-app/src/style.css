@@ -28,6 +28,36 @@ table.data th { color: var(--muted); font-weight: 600; font-size: 0.78rem; lette
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 10px; margin: 12px 0 20px; }
 .stat-card { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--panel); }
 .stat-card b { display: block; font-size: 1.35rem; line-height: 1.2; }
+.action-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.button-link, button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 11px;
+  border: 1px solid var(--accent); border-radius: 7px; background: var(--accent); color: var(--accent-fg); font: inherit;
+  font-size: .88rem; font-weight: 600; text-decoration: none; cursor: pointer; }
+.button-link.secondary, button.secondary { background: transparent; color: var(--accent); }
+.agent-instructions { margin: 22px 0; padding: 16px 18px; border: 2px solid var(--accent); border-radius: 12px; background: #f2f7f5; }
+.agent-instructions h2 { margin-top: 0; }
+.agent-instructions code { font-size: .9em; }
+.eyebrow, .card-kicker { color: var(--accent); font-size: .76rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.workspace-tabs { display: flex; gap: 8px; overflow-x: auto; margin: 22px 0; padding-bottom: 6px; }
+.workspace-tabs a { white-space: nowrap; padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); text-decoration: none; }
+.workspace-tabs a[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: var(--accent); }
+.workspace-tabs span { display: inline-block; min-width: 1.15rem; text-align: center; border-radius: 99px; background: color-mix(in srgb, currentColor 14%, transparent); }
+.workspace-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 12px; margin: 12px 0 24px; }
+.workspace-card { padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.workspace-card h3 { margin: 4px 0 8px; }
+.priority-card { border-color: var(--accent); }
+.task-list { display: grid; gap: 8px; padding: 0; list-style: none; }
+.task-list li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 9px; }
+.task-list label { display: grid; gap: 2px; cursor: pointer; }
+.task-list label span { color: var(--muted); font-size: .86rem; }
+.task-list input:checked + label { text-decoration: line-through; color: var(--muted); }
+.status-chip { display: inline-block; padding: 2px 7px; border-radius: 99px; font-size: .78rem; font-weight: 600; }
+.status-chip.pending { background: #fdf3e0; color: #8a5a10; }
+.status-chip.live, .status-chip.booked { background: #e7f3ec; color: #2f7d5d; }
+.status-chip.review { background: #eaf0fb; color: #3a5a8a; }
+.timeline { display: grid; gap: 12px; padding: 0; list-style: none; }
+.timeline li { display: grid; grid-template-columns: 5rem 1fr; gap: 12px; border-left: 2px solid var(--line); padding: 0 0 12px 12px; }
+.timeline time { color: var(--muted); font-size: .86rem; font-weight: 600; }
+.timeline p { margin: 4px 0 0; }
 form .field { display: grid; gap: 4px; margin-bottom: 12px; max-width: 22rem; }
 form .field label { font-weight: 600; font-size: .9rem; }
 form .field input, form .field select {
@@ -59,6 +89,9 @@ footer { border-top: 1px solid var(--line); padding: 20px 28px; color: var(--mut
 #wf header { padding: 12px 14px; border-bottom: 1px solid var(--line); display: block; }
 #wf h2 { margin: 0 0 2px; font-size: 14px; }
 #wf .sub { color: var(--muted); font-size: 12px; }
+#wf .mcp-usage { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; margin-top: 8px; padding: 7px 8px; border-radius: 7px; background: #eef3f1; color: #284c40; font-variant-numeric: tabular-nums; }
+#wf .mcp-usage span { text-align: right; font-weight: 600; }
+#wf .mcp-usage small { grid-column: 1 / -1; color: #4a5d57; }
 #wf .body { overflow: auto; padding: 12px 14px; flex: 1; }
 #wf .row { display: flex; gap: 6px; margin-bottom: 10px; }
 #wf input { flex: 1; font: inherit; padding: 7px 9px; border-radius: 7px;

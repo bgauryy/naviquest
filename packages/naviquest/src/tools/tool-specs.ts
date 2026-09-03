@@ -49,7 +49,7 @@ const NON_EMPTY_STRING_OR_LIST = {
 export const TOOL_SPECS = [
   {
     name: 'describe_app', title: 'Orient on page',
-    description: 'Use first for structure, modal state, coverage, and vocabulary. Facts → find_on_page; a control → locate_control; inventories → query_selector. After acting, pass `_observation` as `changesSince`.',
+    description: 'Use first: map this page’s sections, views, coverage, and vocabulary. For a page report, follow `pagination.next`, then resolve only relevant returned addresses. For a site graph, use agentic_content for same-origin destinations, navigate, repeat, and track visited URLs. Facts → find_on_page; inputs/actions → query_selector; a job → locate_control. After acting, pass `_observation` as `changesSince`.',
     inputSchema: { type: 'object', properties: {
       opaque: { type: 'boolean', description: 'Boxes of elements the text index cannot read (canvas, unlabeled images), not the orientation.' },
       describe: { type: 'boolean', description: 'With `opaque:true`, read each canvas/image region with an on-device model (`description`). Slow — use a small `limit`. Fail-open where no model exists.' },
@@ -63,7 +63,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'find_on_page', title: 'Search page',
-    description: 'Search page content, not controls. Treat `answer` as evidence, not verified truth. Expand a `textIsExcerpt` address with resolve_address. For navigation set `goal` and follow `nextCalls`; other pages → agentic_content.',
+    description: 'Search page content, not controls. Treat `answer` as evidence, not verified truth. Expand a `textIsExcerpt` address with resolve_address. For navigation set `goal` and follow `nextCalls`; other pages → agentic_content. If incomplete, copy `pagination.next`.',
     inputSchema: { type: 'object', properties: {
       query: { type: 'string', minLength: 1, description: 'Content, not a control.' },
       goal: { type: 'string', minLength: 1, description: '`read` default; `navigate` requests an action.' },
@@ -75,7 +75,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'locate_control', title: 'Find a control',
-    description: 'Find a live control or link by job; content → find_on_page. Use `recommended` or refine candidates, then resolve_address immediately before the host acts.',
+    description: 'Find a live control or link by job; content → find_on_page. Use `recommended` or refine candidates, then resolve_address immediately before the host acts. If incomplete, copy `pagination.next`.',
     inputSchema: { type: 'object', properties: {
       description: { type: 'string', minLength: 1, description: 'Control job, not guessed label.' },
       limit: { ...PAGE_LIMIT, default: 4 }, offset: PAGE_OFFSET, revision: NUMERIC_REVISION,
@@ -87,7 +87,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'resolve_address', title: 'Resolve address', readOnlyHint: false,
-    description: 'Ground an address immediately before acting, or expand a region. Returns fresh state, viewport box, navigation, and a last-resort selector; regions return paginated text. Never reuse a box. Follow failure hints.',
+    description: 'Ground an address immediately before acting, or expand a region. It returns fresh state, viewport box, navigation, and a last-resort selector. Incomplete region text/control pages expose `pagination.next`; call it before claiming completeness. Never reuse a box. Follow failure hints.',
     inputSchema: { type: 'object', properties: {
       address: ADDRESS_INPUT,
       scrollIntoView: { type: 'boolean', description: 'Move before measuring.' },
@@ -98,7 +98,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'query_selector', title: 'List or inspect by semantics/CSS',
-    description: 'Exact inventory or known CSS, not relevance. Views: `actions`, `structure`, `forms`, or searchable `scopes`. Indexed rows return an address for resolve_address; outside the projection, rows return `address:null` and a best-effort selector. Job → locate_control; question → find_on_page.',
+    description: 'Exact inventory or known CSS, not relevance. Use `actions`/`forms` to report all visible inputs and controls, `structure` for content regions, and `scopes` for inspectable DOM. Follow `pagination.next` or report the remainder. Indexed rows return an address for resolve_address; outside the projection, rows return `address:null` and a best-effort selector. Job → locate_control; question → find_on_page.',
     inputSchema: { type: 'object', properties: {
       view: { type: 'string', enum: [...QUERY_VIEWS] },
       selector: { type: 'string', minLength: 1, description: 'Known CSS.' },
@@ -118,7 +118,7 @@ export const TOOL_SPECS = [
   },
   {
     name: 'agentic_content', title: 'Agent resources',
-    description: 'Find or read same-origin resources beyond this page. For `liveUrl`, the host navigates and calls find_on_page there; track visited URLs externally. Pass `resourceUrl` to this tool\'s read intent. This page → find_on_page.',
+    description: 'Build a same-origin site graph: `list`/`find` discovers resources and live page links. For each `liveUrl`, the host navigates, then calls describe_app and page tools there; track visited URLs and report unvisited/truncated destinations. Pass `resourceUrl` to this tool\'s read intent. This page → find_on_page.',
     inputSchema: { type: 'object', properties: {
       intent: { type: 'string', enum: ['list', 'read', 'find'] },
       query: { type: 'string' },

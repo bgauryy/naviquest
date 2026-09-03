@@ -272,7 +272,7 @@ const FIXTURE_HTML = `<!doctype html><html lang="en"><head><title>Contract fixtu
     <a href="#search">Skip to search</a>
   </nav>
   <section><h2>Search</h2><button id="search">Search the site</button></section>
-  <section><h2>Parent only</h2><h3>Child criterion</h3><p>Nested criterion evidence.</p></section>
+  <section><h2>Parent only</h2><h3>Child criterion</h3><p>${'Nested criterion evidence. '.repeat(700)}</p></section>
   <label>Consent <input id="consent" type="checkbox"></label>
   <label>Secret <input id="secret" type="password" value="classified"></label>
   <div role="dialog" aria-modal="true" hidden><button>Inactive modal action</button></div>
@@ -285,6 +285,9 @@ const FIXTURE_HTML = `<!doctype html><html lang="en"><head><title>Contract fixtu
     <button type="button" id="pay-phrasing">Pay <span>now</span></button>
     <p id="mdn-caption">Rate is <code>12%</code> per <a href="#y">year</a></p>
     <p id="big-prose">${'Refund clause sentence carrying budget pressure. '.repeat(200)}</p>
+  </section>
+  <section><h2>Unreadable map previews</h2>
+    <img src="map-a.png" width="16" height="16"><img src="map-b.png" width="16" height="16"><img src="map-c.png" width="16" height="16">
   </section>
   <div data-private><button>Private action</button><p>private phrase</p></div>
   </main></body></html>`;
@@ -489,6 +492,10 @@ async function laneContracts(browser: Browser) {
       const parentOutline = outline.results?.find((x: any) => x.text === 'Parent only');
       const parentRead = parentOutline?.address
         ? await wq.tools.resolve_address({ address: parentOutline.address, expand: true }) : null;
+      const parentNext = parentRead?.pagination?.next?.[0];
+      const parentResumed = parentNext
+        ? await wq.tools.resolve_address(parentNext.arguments)
+        : null;
       const exactAction = await wq.tools.query_selector({ view: 'actions', name: 'Guide page', limit: 20 });
       const exactHeading = await wq.tools.query_selector({ view: 'structure', heading: 'Search', limit: 20 });
 
@@ -578,6 +585,11 @@ async function laneContracts(browser: Browser) {
       liveOrientation.purpose = 'Changed fixture purpose.';
       const authoredMoved = await oriented.tools.describe_app({ since: authoredStable._etag });
       const authoredOpaque = await oriented.tools.describe_app({ opaque: true, limit: 5 });
+      const opaquePage = await oriented.tools.describe_app({ opaque: true, limit: 1 });
+      const opaqueNext = opaquePage.pagination?.next?.[0];
+      const opaqueResumed = opaqueNext
+        ? await oriented.tools.describe_app(opaqueNext.arguments)
+        : null;
       const authoredSection = await oriented.tools.describe_app({ section: 'outline', limit: 5 });
       const authoredExact = await oriented.tools.query_selector({
         selector: authoredPage.authored.tasks[0].locate, limit: 2,
@@ -613,11 +625,12 @@ async function laneContracts(browser: Browser) {
       return { located, searchButton, firstResolved, secondResolved, docs, docsNavigate, fallback, fallbackRead, unknownRead,
         baseline, changes, unchanged,
         malformed, mixed, rerender, cappedChanges, expired, manualChanges, crossInstance,
-        malformedCap, malformedExpiry, regionChange, outcomeChange, settleBusy, settleQuiet, formsView, formsStale, invalidExclude, evidenceOnly, parentSearch, phrasingSearch, methodSearch, phrasingExact, payButton, styledSearch, captionExact, bigSelectorText, unindexedMatch, outline, parentOutline, parentRead,
+        malformedCap, malformedExpiry, regionChange, outcomeChange, settleBusy, settleQuiet, formsView, formsStale, invalidExclude, evidenceOnly, parentSearch, phrasingSearch, methodSearch, phrasingExact, payButton, styledSearch, captionExact, bigSelectorText, unindexedMatch, outline, parentOutline, parentRead, parentNext, parentResumed,
         exactAction, exactHeading, freshControl, freshFallback, staleRegion,
         intents, badReasonType, badReasonLines, badJson, summarizedReason,
         failedRegistration, namesAfterFailure, retryA, retryB, retryCalls, namesAfterRetry, namesAfterDispose,
-        authoredPage, authoredStable, authoredMoved, authoredOpaque, authoredSection, authoredExact, authoredLong, authoredThrow, authoredBad, authoredExcluded };
+        authoredPage, authoredStable, authoredMoved, authoredOpaque, opaquePage, opaqueNext, opaqueResumed,
+        authoredSection, authoredExact, authoredLong, authoredThrow, authoredBad, authoredExcluded };
     });
 
     check('every tool response exposes one generic orchestration outcome',
@@ -740,6 +753,12 @@ async function laneContracts(browser: Browser) {
         && result.parentRead?.headingPath?.at(-1) === 'Parent only'
         && String(result.parentRead?.text).includes('Nested criterion evidence'),
       { outline: result.parentOutline, read: result.parentRead });
+    check('a paged region keeps its mode budget and resumes through resolve_address',
+      result.parentRead?._budget === 2_000
+        && result.parentNext?.tool === 'resolve_address'
+        && result.parentResumed?.status === 'RESOLVED'
+        && result.parentResumed?.textOffset > 0,
+      { first: result.parentRead, next: result.parentNext, resumed: result.parentResumed });
     check('exact semantic action-name filtering returns only the copied name',
       result.exactAction.matched === 1
         && result.exactAction.results?.length === 1
@@ -831,6 +850,12 @@ async function laneContracts(browser: Browser) {
     check('opaque and section modes omit authored',
       !('authored' in result.authoredOpaque) && !('authored' in result.authoredSection),
       { opaque: result.authoredOpaque, section: result.authoredSection });
+    check('opaque pagination resumes through registered describe_app',
+      result.opaquePage.total > 1
+        && result.opaqueNext?.tool === 'describe_app'
+        && result.opaqueResumed?.offset === 1
+        && !result.opaqueResumed?.error,
+      { first: result.opaquePage, next: result.opaqueNext, resumed: result.opaqueResumed });
     const phrasingBlob = [
       result.phrasingSearch?.answer?.text,
       ...(result.phrasingSearch?.results ?? []).map((row: { text?: string }) => row.text),

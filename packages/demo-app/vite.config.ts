@@ -15,8 +15,9 @@ export default defineConfig({
   preview: { port: 5311 },
   worker: { format: 'es' },
   build: {
-    // Vercel owns packages/demo-app as its Root Directory and publishes `out`.
-    outDir: 'out',
+    // Vite resolves relative output paths from `root`, not this config file.
+    // Publish the repository-root directory configured in `vercel.json`.
+    outDir: fileURLToPath(new URL('../../out', import.meta.url)),
     emptyOutDir: true,
     target: 'es2023',
     rollupOptions: {

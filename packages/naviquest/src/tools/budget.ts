@@ -81,7 +81,6 @@ export function createBudgeter(
 ): Budgeter {
   /** One cursor shape for every tool; applied before measuring. */
   const pagination = (tool: ToolName, o: ToolPayload): ToolPayload => {
-    delete o.pagination;
     const cursors = o.continuation ? [o.continuation] : o.continuations && Object.values(o.continuations);
     if (cursors) o.pagination = { complete: false,
       next: cursors.map((args: unknown) => ({ tool, arguments: args })) };

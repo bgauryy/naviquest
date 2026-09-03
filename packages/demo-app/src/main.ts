@@ -88,6 +88,38 @@ function bootResidentFixtures() {
 }
 bootResidentFixtures();
 
+// Large, deterministic service directories make CityDesk behave like the kind
+// of data-heavy SPA Naviquest is meant to orient within. They are rendered
+// before registration, so agents see the same DOM a resident sees.
+const pageDirectory = {
+  '/parking.html': { title: 'Parking service directory', noun: 'parking request', route: '/parking.html#renew', action: 'Review permit route' },
+  '/libraries.html': { title: 'Library service directory', noun: 'library service', route: '/libraries.html#pcs', action: 'Review library route' },
+  '/notices.html': { title: 'Notice and consultation directory', noun: 'public notice', route: '/notices.html#planning', action: 'Review notice route' },
+  '/workspace.html': { title: 'My City service history', noun: 'resident task', route: '/workspace.html#tasks', action: 'Review task route' },
+} as const;
+const directory = pageDirectory[location.pathname as keyof typeof pageDirectory];
+const directoryTask = directory ? [{
+  name: `${directory.title}: 650 rendered records`,
+  locate: '#service-directory',
+  how: 'This first-party directory has 650 fictional records; search live page content only for a specific record or status.',
+}] : [];
+if (directory) {
+  const section = document.createElement('section');
+  section.id = 'service-directory';
+  section.setAttribute('aria-labelledby', 'service-directory-h');
+  const names = ['Address update', 'Eligibility check', 'Document review', 'Appointment request', 'Payment reminder', 'Status update', 'Neighbourhood enquiry', 'Accessibility support'];
+  const areas = ['Riverside', 'Northgate', 'Eastfield', 'Hillcrest', 'Parkside', 'Quayside', 'Market', 'Hospital'];
+  const rows = Array.from({ length: 650 }, (_, i) => {
+    const id = String(i + 1).padStart(4, '0');
+    const name = names[i % names.length];
+    const area = areas[i % areas.length];
+    const state = i % 9 === 0 ? 'Needs attention' : i % 4 === 0 ? 'Scheduled' : 'Available';
+    return `<tr><td>${directory.noun} ${id}</td><td>${name}</td><td>${area}</td><td>${state}</td><td><a href="${directory.route}">${directory.action}</a></td></tr>`;
+  }).join('');
+  section.innerHTML = `<h2 id="service-directory-h">${directory.title}</h2><p>Directory of 650 fictional records. Use filters or a targeted route when a specific record matters; the table is intentionally large for orientation and pagination testing.</p><div class="action-row"><button type="button">Filter by status</button><button type="button" class="secondary">Export visible records</button></div><table class="data"><thead><tr><th>Reference</th><th>Service</th><th>Area</th><th>Status</th><th>Next action</th></tr></thead><tbody>${rows}</tbody></table>`;
+  document.querySelector('main')?.append(section);
+}
+
 // CityDesk is a WebMCP provider. It registers Naviquest and never calls any of
 // its six tools: an external agent owns invocation, tool input, and responses.
 const flags = new URLSearchParams(location.search);
@@ -101,13 +133,14 @@ const naviquest = await createNaviquest({
   dense: useDense ? 'eager' : false,
   ...(useDense && denseFlag !== '1' ? { denseBase: denseFlag } : {}),
   orientation: {
-    purpose: 'Map CityDesk for a new user: provide a same-origin site graph, page map, user journeys, visible inputs/actions, and explicit coverage gaps. Prefer structure and addresses; read prose only when needed to fill a material gap.',
+    purpose: 'Help users understand CityDesk by resolving the next material uncertainty with the smallest useful evidence. Build graphs or journeys only when relevant, prefer targeted controls over broad inventories, and state coverage gaps.',
     tasks: [
       { name: 'Start a rebate application', locate: '#startReturn' },
       { name: 'Renew a parking permit', locate: '#parking-renew' },
       { name: 'Report a street light', locate: '#report-light' },
       { name: 'Book a library PC', locate: '#book-pc' },
       { name: 'Subscribe to city notices', locate: '#subscribe-notices' },
+      ...directoryTask,
     ],
     constraints: ['Do not submit payment or bank details. Hand off to the human.'],
   },

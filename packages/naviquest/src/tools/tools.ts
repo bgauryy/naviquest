@@ -267,6 +267,29 @@ export function createTools(d: ToolDeps) {
   }
 
   /**
+   * A budget mode is not necessarily a callable WebMCP name. Region expansion
+   * and opaque discovery deliberately keep separate ceilings because their
+   * payload shapes cost differently, while agents still resume them through
+   * resolve_address and describe_app. Adapt the cursor only after the shared
+   * budgeter has created it: putting this knowledge in budget.ts would couple
+   * its generic envelope to this six-tool dispatch and pull it into the eager
+   * SDK closure.
+   */
+  function budgetMode(mode: ToolName, publicTool: ToolSpecName,
+                      resume: (args: unknown) => ToolPayload,
+                      out: ToolPayload, shrink: Shrink): ToolPayload {
+    const sent = budget(mode, out, shrink);
+    const next = sent.pagination?.next;
+    if (Array.isArray(next)) {
+      for (const call of next) {
+        call.tool = publicTool;
+        call.arguments = resume(call.arguments);
+      }
+    }
+    return sent;
+  }
+
+  /**
    * `element -> projected node`, built once per index instead of scanned per hit.
    *
    * `find_on_page` did `projection.nodes.find(n => n.el === first)` inside its
@@ -1857,7 +1880,7 @@ export function createTools(d: ToolDeps) {
         ? 'These carry meaning the text index cannot read; `description` is an on-device model read of the pixels (absent where no model was available). filenameHint is a low-confidence URL guess, never author-written text.'
         : 'These carry meaning the text index cannot read. Add `describe: true` to read canvas/image regions with an on-device model (slow — use a small limit). filenameHint is a low-confidence URL guess, never author-written text.',
     };
-    return budget('list_opaque_regions', out, (o) => {
+    return budgetMode('list_opaque_regions', 'describe_app', (args) => args as ToolPayload, out, (o) => {
       // Dropping one row per step cannot fit a 25-row response inside the
       // budgeter's 12-step safety bound: Wikipedia stopped at 13 rows and 831
       // tokens against a 700-token ceiling. Halving converges while retaining
@@ -2059,7 +2082,7 @@ export function createTools(d: ToolDeps) {
         revealedBy: discloserFor(collapsed[0]),
         note: 'Part of this region is behind a closed disclosure. The text is included, but nothing inside it can be activated until that control is opened.',
       } : {}) };
-    return budget('read_region', out, (o) => {
+    return budgetMode('read_region', 'resolve_address', (address) => ({ address }), out, (o) => {
       const controlsCost = est(o.controls ?? []);
       const textCost = est(o.text ?? '');
       if ((o.controls?.length ?? 0) > 1 && controlsCost >= textCost) {

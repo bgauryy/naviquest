@@ -1,0 +1,101 @@
+{
+  "measuredAt": "2026-09-03T19:45:40.790Z",
+  "estimator": "chars/4",
+  "rows": [
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+      "question": "what does the fetch method return",
+      "gold": "promise",
+      "hop": null,
+      "arms": {
+        "playwright": {
+          "tokens": 10079,
+          "answered": true,
+          "calls": 1
+        },
+        "playwright+naviquest": {
+          "tokens": 1970,
+          "answered": true,
+          "calls": 2
+        },
+        "naviquest-only": {
+          "tokens": 1970,
+          "answered": true,
+          "calls": 2
+        }
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Web_scraping",
+      "question": "techniques used for web scraping",
+      "gold": "scraping",
+      "hop": null,
+      "arms": {
+        "playwright": {
+          "tokens": 18265,
+          "answered": true,
+          "calls": 1
+        },
+        "playwright+naviquest": {
+          "tokens": 772,
+          "answered": true,
+          "calls": 1
+        },
+        "naviquest-only": {
+          "tokens": 772,
+          "answered": true,
+          "calls": 1
+        }
+      }
+    },
+    {
+      "url": "https://docs.python.org/3/library/asyncio.html",
+      "question": "run awaitables concurrently",
+      "gold": [
+        "running tasks concurrently",
+        "schedule coroutines concurrently"
+      ],
+      "hop": "go to the coroutines and tasks page",
+      "arms": {
+        "playwright": {
+          "tokens": 25756,
+          "answered": true,
+          "calls": 2
+        },
+        "playwright+naviquest": {
+          "tokens": 1276,
+          "answered": true,
+          "calls": 2
+        },
+        "naviquest-only": {
+          "tokens": 1709,
+          "answered": false,
+          "calls": 2
+        }
+      }
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API",
+      "question": "response body headers status",
+      "gold": "response.body",
+      "hop": "open the Response interface reference",
+      "arms": {
+        "playwright": {
+          "tokens": 23801,
+          "answered": true,
+          "calls": 2
+        },
+        "playwright+naviquest": {
+          "tokens": 1451,
+          "answered": true,
+          "calls": 2
+        },
+        "naviquest-only": {
+          "tokens": 664,
+          "answered": false,
+          "calls": 2
+        }
+      }
+    }
+  ]
+}

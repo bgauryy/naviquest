@@ -8,7 +8,6 @@ dist
 !.yarn/releases
 .pnp.*
 .octocode
-out
 # Chrome skill artifacts: browser profiles, run dirs, the bundled install script
 .naviquest
 

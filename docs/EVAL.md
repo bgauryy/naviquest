@@ -20,6 +20,32 @@ node skills/naviquest-chrome-devtools/scripts/cdp-sandbox.mjs skills/naviquest-c
                                              # which platform APIs the attached Chrome has
 ```
 
+## Proposed Devpost two-agent race (unmeasured)
+
+This candidate compares one Naviquest agent with one plain-`fetch` agent on the
+same five questions. It is a test plan, not a result. Both agents receive only
+the shared home URL and one neutral question. The complete competition protocol
+is in [`POC.md`](../POC.md).
+
+A browser inspection on 2026-09-04 covered the overview, resources, rules,
+project gallery, updates, discussions, schedule, and participants. Challenge
+managers had not published the project gallery, participants required login,
+and discussions were mutable, so none is an answer source for this task set. Do
+not log in, join the hackathon, open **My projects**, or submit a form.
+
+| ID | Question |
+|---|---|
+| D1 | What does a valid WebMCP Challenge submission have to include? List all deliverables and the specific requirements for the project description, demo video, and source-code repository. |
+| D2 | Can a project begun before August 25, 2026 qualify? Explain which work counts, how judges assess it, and what evidence the entrant must provide. |
+| D3 | Give the final extended submission deadline in PT and in EDT. Explain why it changed and identify the three project artifacts that must remain unchanged after submissions close. |
+| D4 | How do the two judging stages work? Name all four equally weighted criteria in the second stage and explain the tie-breaking order. |
+| D5 | How can judges test a submitted application in each supported browser environment? Include the minimum Chrome version and required flag, whether judges must open the live application, and where an entrant must provide private login credentials. |
+
+The run is invalid if one arm receives a destination URL, expected answer, or
+page excerpt that the other arm does not. Capture the rendered page revisions or
+archive the evidence used by the blind judge. The updates page can supersede the
+rules page. Gallery and participant surfaces can change after judging.
+
 ## Three arms, one estimator (2026-09-02, re-runnable)
 
 `yarn eval --only compare` answers four questions three ways and charges every arm

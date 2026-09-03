@@ -1,0 +1,24 @@
+{
+  /* Declarations only. The JS comes from esbuild in build.ts — this exists so
+     the published types are GENERATED from the source rather than written a
+     second time, which is how a .d.ts drifts from the thing it describes.
+
+     `allowImportingTsExtensions` in the root config forbids emit, so the two
+     concerns are separated here rather than fought with: tsc emits nothing but
+     .d.ts, and rewrites the `.ts` specifiers on the way out. */
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    "declarationMap": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  /* The ambient `.d.ts` files stay in: `webmcp.d.ts` and `global.d.ts` are the
+     globals `index.ts` declares, and they have to emit with the rest of the
+     surface. */
+  "include": ["src/**/*.ts"]
+}

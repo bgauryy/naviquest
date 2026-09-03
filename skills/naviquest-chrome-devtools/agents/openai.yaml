@@ -1,0 +1,7 @@
+interface:
+  display_name: "Naviquest in Chrome"
+  short_description: "Run the naviquest WebMCP SDK on a live page over CDP"
+  default_prompt: "Use $naviquest-chrome-devtools to install the naviquest SDK into a live Chrome page and call its six document.modelContext tools — not for DOM scraping."
+
+policy:
+  allow_implicit_invocation: true

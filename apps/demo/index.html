@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CityDesk — city services</title>
+<!-- To test with real WebMCP, paste an origin-trial token registered for this
+     origin. Without it, document.modelContext is absent and the SDK falls back
+     to the in-page panel — which is the default experience for most visitors. -->
+<!-- <meta http-equiv="origin-trial" content="TOKEN_HERE"> -->
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header>
+  <strong>CityDesk</strong>
+  <nav aria-label="Main">
+    <a href="/" aria-current="page">Services</a>
+    <a href="/parking.html">Parking</a>
+    <a href="/libraries.html">Libraries</a>
+    <a href="/notices.html">Notices</a>
+    <a href="/#apps">My applications</a>
+  </nav>
+</header>
+
+<main id="main">
+  <h1>City services</h1>
+  <p>Apply for programmes, check eligibility, and manage your household services.</p>
+
+  <section id="this-week" aria-labelledby="week-h">
+    <h2 id="week-h">This week in the city</h2>
+    <ul>
+      <li>Riverside Library closed Sunday 6 September for boiler works — <a href="/libraries.html">opening hours</a></li>
+      <li>Zone C parking bay suspension on Quay Street 8–10 September — <a href="/parking.html">parking permits</a></li>
+      <li>Planning notice: 22 Harbour Lane, four new flats — <a href="/notices.html">all notices</a></li>
+    </ul>
+  </section>
+
+  <section id="rebate" aria-labelledby="rebate-h">
+    <h2 id="rebate-h">Home energy rebate</h2>
+    <p>The home energy rebate returns part of the cost of insulation, heat pumps, and double glazing for owner-occupied properties within the city boundary.</p>
+
+    <h3>Eligibility</h3>
+    <p>You must own and live in the property, and the property must be your registered primary residence for at least six months of the year. Landlords apply through the separate Landlord Efficiency Scheme.</p>
+    <p>Household income must be below the annual threshold, currently 62,000 per year for a two-adult household, adjusted upward by 8,000 for each dependent child.</p>
+
+    <h3>Eligibility after moving address</h3>
+    <p>If you move within the city, your rebate entitlement transfers to your new property provided you update your address on file within 30 days of the move. The six-month residency clock restarts at the new address, so a claim submitted before six months have elapsed will be held rather than rejected.</p>
+    <p>If you move out of the city boundary, entitlement ends on the date of the move and any pending claim is closed. A partial rebate may still be paid for work completed before that date.</p>
+    <button id="startReturn">Start a rebate application</button>
+    <button id="updateAddr">Update my address on file</button>
+
+    <h3>What you will need</h3>
+    <ul>
+      <li>Proof of ownership, such as a title deed or mortgage statement</li>
+      <li>Two forms of address confirmation dated within the last three months</li>
+      <li>Contractor quotes for the proposed work</li>
+      <li>Your most recent household income assessment</li>
+    </ul>
+
+    <h3>How the rebate is paid</h3>
+    <p>Approved rebates are paid by bank transfer within 28 days of the final inspection. Payment is made to the account named on the application and cannot be redirected after approval.</p>
+  </section>
+
+  <!-- The human's half of the page. The agent works this same form through the
+       WebMCP tools: it reads the eligibility rules above, tells the resident
+       which document is still outstanding, and fills the address field. -->
+  <section id="claim" aria-labelledby="claim-h">
+    <h2 id="claim-h">Apply for the home energy rebate</h2>
+    <p>Applications for the 2026 round close on 30 September. You can save and return at any time.</p>
+    <form id="claim-form">
+      <div class="field">
+        <label for="claim-name">Full name</label>
+        <input id="claim-name" name="name" type="text" autocomplete="name" placeholder="As it appears on your council tax bill">
+      </div>
+      <div class="field">
+        <label for="claim-address">Property address</label>
+        <input id="claim-address" name="address" type="text" autocomplete="street-address" placeholder="The property you are claiming for">
+      </div>
+      <div class="field">
+        <label for="claim-moved">Date you moved in</label>
+        <input id="claim-moved" name="moved" type="date">
+      </div>
+      <fieldset>
+        <legend>Documents provided</legend>
+        <label><input type="checkbox" id="doc-ownership" name="ownership"> Proof of ownership</label>
+        <label><input type="checkbox" id="doc-address" name="addressproof"> Two forms of address confirmation</label>
+        <label><input type="checkbox" id="doc-income" name="income"> Household income assessment</label>
+      </fieldset>
+      <button type="button" id="claim-submit">Submit rebate claim</button>
+      <p class="sub" id="claim-status" role="status">Not submitted.</p>
+    </form>
+  </section>
+
+  <section id="waste" aria-labelledby="waste-h">
+    <h2 id="waste-h">Waste and recycling</h2>
+    <h3>Collection schedule</h3>
+    <p>General waste is collected weekly. Recycling is collected fortnightly on the alternate week. Bulk waste collection is scheduled every second Tuesday and must be booked at least four working days in advance.</p>
+    <h3>Changing your collection after a move</h3>
+    <p>Collection days are assigned by street, not by household, so a move to a different street usually changes your collection day. Update your address on file and the new schedule appears within two working days.</p>
+    <h3>Missed collections</h3>
+    <p>Report a missed collection within 48 hours. Crews return within two working days. Repeat misses on the same address are escalated to the depot supervisor automatically after the third report in a quarter.</p>
+  </section>
+
+  <section id="parking" aria-labelledby="parking-h">
+    <h2 id="parking-h">Parking permits</h2>
+    <h3>Renewal</h3>
+    <p>Resident parking permits renew annually on the first of April. Renewal notices are sent by post six weeks in advance and by email if you have opted in.</p>
+    <h3>Permits and address changes</h3>
+    <p>A permit is tied to a specific parking zone. Moving to an address in a different zone requires a new permit rather than a transfer, and the unused portion of the old permit is refunded pro rata.</p>
+    <p><a href="/parking.html">Open parking permits — zones, prices, and renewal</a></p>
+  </section>
+
+  <!-- Deliberately broken structure. 41.8% of real pages skip heading levels and
+       that figure is worsening, so the fallback path must be demonstrated, not
+       claimed. No landmark, an h5 after an h2, and a div styled as a heading. -->
+  <div id="broken">
+    <h2>Street lighting and road defects</h2>
+    <h5>Reporting a broken street light</h5>
+    <p>Report a broken street light using the online form. You will need the column reference number, which is printed on a small plate roughly two metres up the pole. Faults are repaired within ten working days, or five where the light is at a pedestrian crossing.</p>
+    <button type="button" id="report-light">Report a street light</button>
+    <div class="fakehead">Potholes and surface defects</div>
+    <p>Potholes deeper than 40mm on a carriageway are treated as urgent and made safe within 24 hours. Shallower defects are added to the quarterly resurfacing programme. Report the location using the nearest street number or a what3words reference.</p>
+    <div class="fakehead">Damaged pavements</div>
+    <p>Trip hazards on pavements greater than 25mm are made safe within 24 hours. Cosmetic cracking is recorded but not individually scheduled.</p>
+  </div>
+
+
+  <section id="council-tax" aria-labelledby="ct-h">
+    <h2 id="ct-h">Council tax</h2>
+    <h3>How your band is decided</h3>
+    <p>Every domestic property is placed in one of eight valuation bands, A through H, based on an assessed capital value. Bands are set nationally by the Valuation Office and the city cannot alter them. Improvements you make to a property do not trigger a re-band until the property is next sold.</p>
+    <h3>Discounts and exemptions</h3>
+    <p>A single occupant discount of 25 percent applies where only one adult lives at the property. Full-time students, apprentices on approved schemes, and people in long-term residential care are disregarded when counting adults, which can bring a two-adult household down to the single occupant rate.</p>
+    <p>Properties left empty and substantially unfurnished are exempt for the first three months. After twelve months an empty homes premium is added, rising the longer the property stands unoccupied.</p>
+    <h3>Moving home and council tax</h3>
+    <p>Tell us within 21 days of moving. We close the account at the old address on the day the tenancy or ownership ends, and open a new account from the day your liability begins. Overlapping liability at two addresses is possible during a purchase chain, and a discretionary reduction may be applied where the overlap exceeds one month.</p>
+    <h3>Paying</h3>
+    <p>The annual charge is normally spread over ten monthly instalments from April to January. You may request twelve instalments instead, which reduces each payment but extends collection to March. Direct debit is available on the first, tenth, or twentieth of the month.</p>
+    <button id="ctChange">Report a change of circumstances</button>
+  </section>
+
+  <section id="housing" aria-labelledby="hou-h">
+    <h2 id="hou-h">Housing and tenancy</h2>
+    <h3>Joining the housing register</h3>
+    <p>Applications are assessed against a banding scheme that weighs current housing conditions, medical need, and local connection. A local connection normally means five years continuous residence, employment within the boundary, or close family who have lived here for five years.</p>
+    <h3>Repairs and response times</h3>
+    <p>Emergency repairs, meaning anything that presents an immediate risk to health, safety, or the structure of the building, are attended within four hours. Urgent repairs such as a total loss of hot water are completed within three working days. Routine repairs are scheduled within twenty working days.</p>
+    <h3>Mutual exchange</h3>
+    <p>Tenants may swap homes with another social tenant subject to consent. Consent can be refused where either property would become substantially overcrowded or under-occupied, or where possession proceedings are underway.</p>
+    <h3>Ending a tenancy</h3>
+    <p>Give four weeks written notice ending on a Sunday. The property must be cleared, cleaned, and all keys returned by noon on the final day. Charges are raised for removal of belongings left behind.</p>
+  </section>
+
+  <section id="licensing" aria-labelledby="lic-h">
+    <h2 id="lic-h">Licensing and permits</h2>
+    <h3>Pavement licences</h3>
+    <p>A pavement licence allows tables and chairs on the highway outside a premises. Applications require a plan showing a clear pedestrian route of at least one and a half metres, public liability insurance of five million, and consultation with adjoining occupiers over a fourteen day period.</p>
+    <h3>Skip permits</h3>
+    <p>A skip placed on the highway needs a permit issued to the skip operator, not the householder. Permits run for fourteen days and require reflective markings and night-time lamps. Skips are not permitted on bus routes between seven and nine thirty in the morning.</p>
+    <h3>Street trading</h3>
+    <p>Consent is required for any sale of goods in a street or public place. Consent is site-specific and is not transferable between pitches. A limited number of pitches operates a rotation, allocated annually by ballot in February.</p>
+    <h3>Event notifications</h3>
+    <p>Events expecting more than five hundred attendees must notify the safety advisory group at least twelve weeks in advance. Road closures require a separate order with a minimum of eight weeks notice and formal advertisement.</p>
+  </section>
+
+  <section id="schools" aria-labelledby="sch-h">
+    <h2 id="sch-h">School admissions</h2>
+    <h3>Applying for a place</h3>
+    <p>Apply in the round for the year your child starts. Late applications are considered only after all on-time applications have been allocated, which in practice means the closest schools are usually full.</p>
+    <h3>Oversubscription criteria</h3>
+    <p>Where a school receives more applications than places, priority runs in order: children in care, children with a sibling already attending, children living within the designated catchment measured by walking route, and then remaining applicants by straight-line distance.</p>
+    <h3>Moving during the school year</h3>
+    <p>An in-year transfer is available at any point. A change of address does not by itself guarantee a place at a nearer school, and where the current school remains within statutory walking distance transport assistance is not provided.</p>
+    <h3>Appeals</h3>
+    <p>Appeals are heard by an independent panel. You must lodge an appeal within twenty school days of a refusal. The panel may only uphold an appeal where admitting the child would not cause prejudice to efficient education, or where the admission arrangements were incorrectly applied.</p>
+  </section>
+
+
+  <section id="nontext" aria-labelledby="nt-h">
+    <h2 id="nt-h">Recycling centre map and usage</h2>
+
+    <figure>
+      <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="200" height="90" alt="Map of the four recycling centres, clustered along the northern ring road">
+      <figcaption>Recycling centre locations, updated March 2026.</figcaption>
+    </figure>
+
+    <h3>Images the index handles differently</h3>
+    <p>Below are deliberately varied non-text elements.</p>
+
+    <!-- author-declared decorative: index nothing, flag nothing -->
+    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="120" height="8" alt="" class="rule">
+
+    <!-- junk alt: WebAIM's 10.8%. Must be rejected, not indexed -->
+    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="90" height="60" alt="chart-final-v2.png">
+    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="90" height="60" alt="image">
+
+    <!-- silent hole: no alt at all -->
+    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" width="140" height="80" id="noalt">
+
+    <!-- labelled inline SVG -->
+    <svg width="80" height="80" role="img" aria-labelledby="svgt"><title id="svgt">Household waste split: 62 percent recycled, 38 percent landfill</title><circle cx="40" cy="40" r="34" fill="#2f5d50"></circle></svg>
+
+    <!-- unlabelled inline SVG: path data must never be indexed -->
+    <svg width="60" height="60" viewBox="0 0 60 60"><path d="M4 30 L30 4 L56 30 L30 56 Z" fill="#888"></path></svg>
+
+    <h3>Canvas</h3>
+    <!-- fallback content is NORMATIVE in the HTML spec -->
+    <canvas width="200" height="80">Bulk waste bookings by month: January 210, February 190, March 260, April 240.</canvas>
+    <!-- no fallback: genuinely opaque -->
+    <canvas width="200" height="80" id="blindcanvas"></canvas>
+
+    <h3>Charts</h3>
+    <!-- Highcharts-shaped: export-data renders a real table we can harvest -->
+    <div class="highcharts-container">
+      <canvas width="220" height="90"></canvas>
+    </div>
+    <table class="highcharts-data-table">
+      <tr><th>Month</th><th>Tonnes recycled</th></tr>
+      <tr><td>January</td><td>1240</td></tr>
+      <tr><td>February</td><td>1190</td></tr>
+      <tr><td>March</td><td>1355</td></tr>
+    </table>
+
+    <!-- Vega-shaped: per-mark aria-labels already present, normally discarded -->
+    <div class="vega-embed">
+      <svg width="200" height="90" role="img" aria-label="Contamination rate by district">
+        <rect role="graphics-symbol" aria-label="Riverside: 4.2 percent contamination" width="20" height="40" x="10" y="40" fill="#7fbfa9"></rect>
+        <rect role="graphics-symbol" aria-label="Northgate: 6.8 percent contamination" width="20" height="62" x="40" y="18" fill="#7fbfa9"></rect>
+        <rect role="graphics-symbol" aria-label="Eastfield: 3.1 percent contamination" width="20" height="28" x="70" y="52" fill="#7fbfa9"></rect>
+      </svg>
+    </div>
+
+    <h3>Controls</h3>
+    <button aria-label="Download the recycling centre map as PDF">⤓</button>
+    <!-- icon-only, no accessible name: 30.6% of home pages have one of these -->
+    <button id="iconless">★</button>
+  </section>
+
+  <!-- A real same-origin destination, inside the indexed root.
+       Every other link on this page is a fragment anchor, so `outboundLinks()`
+       had nothing to offer and the agentic_content fallback — the "there is
+       always a next move" path — could not be exercised at all. A demo that
+       cannot reach its own fallback is not demonstrating it. -->
+  <section id="about-site" aria-labelledby="about-h">
+    <h2 id="about-h">About this service</h2>
+    <p>Read our <a href="/accessibility-statement.html">accessibility statement</a>
+       and the <a href="/LICENSE.txt">MIT license</a> for this demonstration.</p>
+    <p>Other CityDesk pages: <a href="/parking.html">parking permits</a>,
+       <a href="/libraries.html">libraries</a>,
+       <a href="/notices.html">city notices</a>.</p>
+  </section>
+
+  <section id="apps" aria-labelledby="apps-h">
+    <h2 id="apps-h">My applications</h2>
+    <div id="applist" role="list" aria-label="Past applications"></div>
+  </section>
+
+  <section aria-labelledby="contact-h">
+    <h2 id="contact-h">Contact details on file</h2>
+    <div data-private>
+      <p>Account holder: Dana Whitfield</p>
+      <p>Address: 14 Marlow Terrace, Riverside</p>
+      <p>Telephone: 0117 496 2231</p>
+      <button type="button" id="view-payment">View payment details</button>
+    </div>
+    <p>This block is marked <code>data-private</code>. It is skipped during the DOM walk, so its text never enters the index or any tool response.</p>
+  </section>
+
+  <section aria-labelledby="widget-h">
+    <h2 id="widget-h">Service status</h2>
+    <status-widget></status-widget>
+    <info-card>
+      <h3>Refund policy for booked collections</h3>
+      <p>Refunds for cancelled bulk waste bookings are issued within 30 days of the cancellation being received.</p>
+      <button>Cancel a booking</button>
+    </info-card>
+    <p>The card above this paragraph uses an <em>open</em> shadow root with a bare
+      <code>&lt;slot&gt;</code>. Its slotted content must be indexed exactly once.</p>
+
+    <p>Hidden text that must never be retrievable: <span style="display:none">quokkaphrase secret accordion body</span></p>
+
+    <div data-private>
+      <h1>Dana Whitfield — account 4471</h1>
+      <p id="pd-desc">Private description text: pangolin ledger.</p>
+    </div>
+    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+         width="40" height="40" alt="Chart" aria-describedby="pd-desc">
+
+    <p>The card at the top of this section is a custom element with a <em>closed</em> shadow root. It cannot be inspected from page JavaScript, and the SDK reports that gap rather than returning a projection that looks complete.</p>
+  </section>
+</main>
+
+<dialog id="confirm" aria-modal="true" aria-labelledby="dlg-h">
+  <h2 id="dlg-h">Confirm address change</h2>
+  <p>Changing your address on file will reassign your waste collection day and may invalidate your current parking permit.</p>
+  <button id="dlgOk">Confirm change</button>
+  <button id="dlgCancel">Cancel</button>
+</dialog>
+
+<footer><p>CityDesk is a fictional city portal. Software: <a href="/LICENSE.txt">MIT License</a> © 2026 Naviquest contributors.</p></footer>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+{
+  "compilerOptions": {
+    /* Node 22.18+ and esbuild both strip types without checking them, so the
+       build never needs tsc. This config exists for `yarn typecheck`, which is
+       the only thing that actually reads these rules. */
+    "target": "ES2024",
+    /* ES2024 for `Map.groupBy` and `Promise.withResolvers`, both Baseline Newly
+       and both used deliberately — see docs/TECHNOLOGY.md. */
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+
+    /* Imports use explicit `.ts` extensions so the SAME source runs three ways
+       without an intermediate build: Vite, the Node-based eval scripts, and
+       tsc all resolve it. */
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+
+    /* Node's type stripping cannot handle syntax that has runtime meaning —
+       enums, namespaces, parameter properties. This makes tsc reject them at
+       author time rather than letting a Node-based eval fail at run time. */
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* Deliberately OFF. Every projection node index in this codebase is derived
+       from a length the same expression just measured, so `noUncheckedIndexedAccess`
+       would add hundreds of non-null assertions that assert something already
+       proven — which makes the real assertions harder to find. */
+    "noUncheckedIndexedAccess": false,
+
+    /* The eval scripts are Node programs; the SDK is not and must never depend
+       on them. Both live in one TypeScript program because the evals import the
+       SDK's own types: the checks exercise the implementation that ships. */
+    "types": ["node"],
+
+    /* The demo imports the SDK by package name, exactly as a host would, so a
+       broken export surfaces here instead of after publish. */
+    "paths": { "@naviquest/core": ["./packages/naviquest/src/index.ts"],
+               "@naviquest/core/*": ["./packages/naviquest/*"] },
+
+    "skipLibCheck": true
+  },
+  "include": [
+    "packages/*/src/**/*.ts",
+    /* Tests are in the program too. They import the SDK's own types, so a
+       contract change that breaks a test breaks `yarn typecheck` first — the
+       same reason the eval scripts are here. */
+    "packages/*/test/**/*.ts",
+    "apps/*/src/**/*.ts",
+    "eval/**/*.ts",
+    "vite.*.config.ts",
+    "vite.config.ts",
+    "vitest.config.ts"
+  ]
+}

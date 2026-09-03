@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 920" width="1600" height="920" role="img" aria-label="Naviquest architecture: agent to browser to in-tab pipeline">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="10" markerHeight="7" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#202124"/>
+    </marker>
+    <marker id="arrow-dash" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="10" markerHeight="7" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#5F6368"/>
+    </marker>
+    <marker id="arrow-ipc" viewBox="0 0 10 7" refX="9" refY="3.5" markerWidth="10" markerHeight="7" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#E37400"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="920" fill="#FFFFFF"/>
+
+  <text x="48" y="40" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#202124">Naviquest architecture</text>
+  <text x="48" y="64" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#5F6368">Ask the live page. Do not dump it. The agent talks to the browser; Naviquest never clicks.</text>
+
+  <!-- ===== Figure 1 ===== -->
+  <text x="48" y="96" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="500" font-style="italic" fill="#3C4043">Figure 1. Who talks to whom</text>
+
+  <!-- Agent  x=72 w=216  right=288  cx=180  y=118 h=72  bottom=190  cy=154 -->
+  <rect x="72" y="118" width="216" height="72" rx="4" fill="#F1F3F4" stroke="#80868B" stroke-width="1.5"/>
+  <text x="180" y="148" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202124">Agent</text>
+  <text x="180" y="170" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#5F6368">reasoning loop</text>
+
+  <line x1="288" y1="154" x2="418" y2="154" stroke="#202124" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="353" y="144" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#202124">1. executeTool / wf.tools</text>
+
+  <!-- Host  x=430 w=230  right=660  cx=545 -->
+  <rect x="430" y="118" width="230" height="72" rx="4" fill="#E8F0FE" stroke="#1967D2" stroke-width="1.5"/>
+  <text x="545" y="140" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#1967D2">Browser process</text>
+  <text x="545" y="160" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202124">Host</text>
+  <text x="545" y="178" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#5F6368">clicks / types / screenshots</text>
+
+  <line x1="660" y1="154" x2="848" y2="154" stroke="#202124" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="749" y="144" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#202124">2. WebMCP / page JS</text>
+
+  <!-- Renderer group wraps SDK; inner box shares y/h with Agent and Host -->
+  <rect x="830" y="96" width="340" height="108" rx="6" fill="#E6F4EA" stroke="#137333" stroke-width="1.5" stroke-dasharray="7 4"/>
+  <text x="846" y="112" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#137333">Renderer / this origin</text>
+  <rect x="850" y="118" width="300" height="72" rx="4" fill="#FFFFFF" stroke="#137333" stroke-width="1.5"/>
+  <text x="1000" y="148" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#202124">Naviquest SDK</text>
+  <text x="1000" y="170" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#5F6368">six tools in the tab</text>
+
+  <!-- 3. return: SDK bottom-center (1000,190) down, left, up into Agent bottom-center (180,190) -->
+  <path d="M 1000 190 L 1000 224 L 160 224 L 160 194" fill="none" stroke="#202124" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="590" y="216" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#202124">3. bounded JSON + Address</text>
+
+  <!-- 4. host action: from Agent right-of-center, down, into Host bottom-center. Separate x from return. -->
+  <path d="M 210 190 L 210 252 L 545 252 L 545 194" fill="none" stroke="#5F6368" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow-dash)"/>
+  <text x="362" y="268" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#5F6368">4. click / type / screenshot (host, not Naviquest)</text>
+
+  <!-- ===== Figure 2 ===== -->
+  <text x="48" y="300" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="500" font-style="italic" fill="#3C4043">Figure 2. Request pipeline inside the tab. Retrieval is inline by default; the worker is opt-in.</text>
+
+  <rect x="40" y="314" width="1520" height="196" rx="8" fill="#F0F7F2" stroke="#137333" stroke-width="1.5" stroke-dasharray="8 5"/>
+  <text x="56" y="336" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#137333">Main thread</text>
+  <text x="160" y="336" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#5F6368">DOM / projection / address / highlight stay here</text>
+
+  <!-- Grid: box y=350 h=92 w=198; stride 248; x = 64 + i*248; cy=396 -->
+  <!-- 1 WebMCP x=64 -->
+  <g transform="translate(64, 350)">
+    <rect width="198" height="92" rx="4" fill="#FFFFFF" stroke="#1A73E8" stroke-width="1.5"/>
+    <rect width="198" height="24" rx="4" fill="#1A73E8"/>
+    <rect y="12" width="198" height="12" fill="#1A73E8"/>
+    <text x="99" y="17" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">1  WebMCP</text>
+    <text x="99" y="46" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#202124">document.modelContext</text>
+    <text x="99" y="64" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">navigator.modelContext fallback</text>
+    <text x="99" y="80" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">six tools / lazy answer engine</text>
+  </g>
+  <line x1="262" y1="396" x2="300" y2="396" stroke="#202124" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="281" y="386" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3C4043">dispatch</text>
+
+  <!-- 2 Lifecycle x=312 -->
+  <g transform="translate(312, 350)">
+    <rect width="198" height="92" rx="4" fill="#FFFFFF" stroke="#185ABC" stroke-width="1.5"/>
+    <rect width="198" height="24" rx="4" fill="#185ABC"/>
+    <rect y="12" width="198" height="12" fill="#185ABC"/>
+    <text x="99" y="17" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">2  Lifecycle</text>
+    <text x="99" y="46" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#202124">freshness composite</text>
+    <text x="99" y="64" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">MutationObserver / URL / tree</text>
+    <text x="99" y="80" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">ETag / since / AbortController</text>
+  </g>
+  <line x1="510" y1="396" x2="548" y2="396" stroke="#202124" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="529" y="386" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3C4043">dirty?</text>
+
+  <!-- 3 Projection x=560 -->
+  <g transform="translate(560, 350)">
+    <rect width="198" height="92" rx="4" fill="#FFFFFF" stroke="#188038" stroke-width="1.5"/>
+    <rect width="198" height="24" rx="4" fill="#188038"/>
+    <rect y="12" width="198" height="12" fill="#188038"/>
+    <text x="99" y="17" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">3  Projection</text>
+    <text x="99" y="46" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#202124">ARIA names / roles</text>
+    <text x="99" y="64" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">visibility / shadow / slots / frames</text>
+    <text x="99" y="80" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="500" fill="#188038">DOM stays here / scheduler.yield</text>
+  </g>
+  <line x1="758" y1="396" x2="796" y2="396" stroke="#202124" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="777" y="386" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3C4043">semantic nodes</text>
+
+  <!-- 4 Segment x=808 -->
+  <g transform="translate(808, 350)">
+    <rect width="198" height="92" rx="4" fill="#FFFFFF" stroke="#137333" stroke-width="1.5"/>
+    <rect width="198" height="24" rx="4" fill="#137333"/>
+    <rect y="12" width="198" height="12" fill="#137333"/>
+    <text x="99" y="17" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">4  Segment</text>
+    <text x="99" y="46" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#202124">landmark -&gt; heading</text>
+    <text x="99" y="64" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">Intl.Segmenter (CJK / Thai)</text>
+    <text x="99" y="80" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">Unicode fold + stem</text>
+  </g>
+  <line x1="1006" y1="396" x2="1044" y2="396" stroke="#202124" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="1025" y="386" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3C4043">chunks</text>
+
+  <!-- 5 Retrieval x=1056  (INLINE DEFAULT) -->
+  <g transform="translate(1056, 350)">
+    <rect width="198" height="92" rx="4" fill="#FFFFFF" stroke="#E37400" stroke-width="1.5"/>
+    <rect width="198" height="24" rx="4" fill="#E37400"/>
+    <rect y="12" width="198" height="12" fill="#E37400"/>
+    <text x="99" y="17" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">5  Retrieval</text>
+    <text x="99" y="46" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#202124">BM25 / exact / priors</text>
+    <text x="99" y="64" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">lexical inline by default</text>
+    <text x="99" y="80" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">int8 dense + RRF in worker</text>
+  </g>
+  <line x1="1254" y1="396" x2="1292" y2="396" stroke="#202124" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="1273" y="386" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#3C4043">hits</text>
+
+  <!-- 6 Answer x=1304 -->
+  <g transform="translate(1304, 350)">
+    <rect width="198" height="92" rx="4" fill="#FFFFFF" stroke="#E8710A" stroke-width="1.5"/>
+    <rect width="198" height="24" rx="4" fill="#E8710A"/>
+    <rect y="12" width="198" height="12" fill="#E8710A"/>
+    <text x="99" y="17" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#FFFFFF">6  Answer</text>
+    <text x="99" y="46" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="500" fill="#202124">budget() / Address</text>
+    <text x="99" y="64" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">Prompt API reader / verifier</text>
+    <text x="99" y="80" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#5F6368">Summarizer / multimodal</text>
+  </g>
+
+  <!-- Optional worker, centered under Retrieval (cx=1155) -->
+  <rect x="960" y="540" width="390" height="132" rx="8" fill="#FEF7E0" stroke="#E37400" stroke-width="1.5" stroke-dasharray="8 5"/>
+  <text x="976" y="560" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" fill="#E37400">Optional worker</text>
+  <text x="1108" y="560" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#5F6368">worker: true  (off by default)</text>
+  <rect x="980" y="572" width="350" height="80" rx="4" fill="#FFFFFF" stroke="#F9AB00" stroke-width="1.5"/>
+  <text x="1155" y="596" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="500" fill="#202124">same BM25 / exact / priors, off-thread</text>
+  <text x="1155" y="616" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#5F6368">+ int8 dense + RRF when weights load</text>
+  <text x="1155" y="634" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#5F6368">strings / ids / scores only  --  no DOM</text>
+
+  <!-- Optional IPC: Retrieval bottom-center (1155, 442) to worker top (1155, 540) -->
+  <line x1="1155" y1="442" x2="1155" y2="532" stroke="#E37400" stroke-width="1.75" stroke-dasharray="6 4" marker-end="url(#arrow-ipc)"/>
+  <rect x="1165" y="470" width="160" height="28" rx="3" fill="#FFFFFF" stroke="#E37400" stroke-width="1"/>
+  <text x="1245" y="488" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#E37400">postMessage (IPC)</text>
+  <text x="1142" y="484" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#E37400">opt-in</text>
+
+  <text x="800" y="700" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="500" fill="#202124">After projection, only strings, ids, and scores may enter the worker. The DOM never does.</text>
+  <text x="800" y="720" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="12" fill="#5F6368">window.naviquest is the closed-shadow registerRegion global -- not a WebMCP fallback.</text>
+
+  <!-- Legend -->
+  <line x1="48" y1="760" x2="88" y2="760" stroke="#202124" stroke-width="1.75" marker-end="url(#arrow)"/>
+  <text x="96" y="764" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#3C4043">data (request path)</text>
+
+  <line x1="248" y1="760" x2="288" y2="760" stroke="#5F6368" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow-dash)"/>
+  <text x="296" y="764" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#3C4043">host action</text>
+
+  <line x1="400" y1="760" x2="440" y2="760" stroke="#E37400" stroke-width="1.75" stroke-dasharray="6 4" marker-end="url(#arrow-ipc)"/>
+  <text x="448" y="764" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#3C4043">optional worker</text>
+
+  <rect x="592" y="750" width="14" height="14" fill="#E6F4EA" stroke="#137333" stroke-width="1.25" stroke-dasharray="3 2"/>
+  <text x="612" y="762" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#3C4043">main thread</text>
+
+  <rect x="724" y="750" width="14" height="14" fill="#FEF7E0" stroke="#E37400" stroke-width="1.25" stroke-dasharray="3 2"/>
+  <text x="744" y="762" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#3C4043">worker (opt-in)</text>
+
+  <rect x="876" y="750" width="14" height="14" fill="#E8F0FE" stroke="#1967D2" stroke-width="1.25"/>
+  <text x="896" y="762" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#3C4043">browser process</text>
+
+  <text x="48" y="800" font-family="Arial, Helvetica, sans-serif" font-size="11" fill="#80868B">TypeScript / esbuild / 29.2 kB eager gate / dom-accessibility-api / untrustedContentHint / host redact / same-origin fetch</text>
+</svg>

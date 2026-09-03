@@ -1,0 +1,42 @@
+{
+  "name": "naviquest-monorepo",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --open",
+    "build": "yarn build:lib && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "build:lib": "node packages/naviquest/build.ts",
+    "eval": "node eval/eval.ts",
+    "research": "node eval/research/harness.mjs",
+    "research:budget": "node eval/research/budget-bars.mjs",
+    "research:report": "node eval/research/aggregate.mjs report",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/aria-query": "^5",
+    "@types/jsdom": "^30",
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8",
+    "aria-query": "^5.3.2",
+    "axe-core": "^4.13.0",
+    "esbuild": "^0.25.0",
+    "jsdom": "^30.0.1",
+    "playwright": "^1.62.1",
+    "terser": "^5.50.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.0.0",
+    "vitest": "^4.1.11",
+    "ws": "^8.21.3",
+    "zod": "^4.4.3"
+  },
+  "packageManager": "yarn@4.9.1",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}

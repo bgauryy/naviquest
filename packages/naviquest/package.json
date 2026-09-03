@@ -1,0 +1,31 @@
+{
+  "name": "@naviquest/core",
+  "version": "0.1.0",
+  "description": "Ask the page, don't dump it. Browser-side WebMCP SDK: six token-budgeted tools for agent navigation and research.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./worker": {
+      "types": "./dist/worker.d.ts",
+      "default": "./dist/worker.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "prepublishOnly": "node build.ts"
+  },
+  "devDependencies": {
+    "dom-accessibility-api": "^0.7.1",
+    "esbuild": "^0.25.0"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "goal": "Show whether the six naviquest tools answer real research questions more cheaply than a competent fetch-and-read agent, at no cost in answer quality.",
+  "primary_kpi": {
+    "name": "tokens_per_answered_task",
+    "direction": "lower_better",
+    "unit": "tokens",
+    "estimator": "chars/4 of the full result JSON, charged identically to both arms",
+    "baseline_arm": "baseline",
+    "candidate_arm": "naviquest"
+  },
+  "secondary_kpis": [
+    { "name": "context_held", "direction": "lower_better", "unit": "tokens", "note": "largest single payload the agent must keep resident" },
+    { "name": "quality_rating", "direction": "higher_better", "unit": "blind_judge_rating", "note": "correct|partial|wrong|unsupported, no gold phrase" },
+    { "name": "wall_clock", "direction": "lower_better", "unit": "ms", "note": "reported, not optimized — the baseline can legitimately win this" },
+    { "name": "pages_reached", "direction": "higher_better", "unit": "pages" }
+  ],
+  "guardrails": {
+    "quality_must_not_regress": true,
+    "both_arms_same_estimator": true,
+    "judge_must_be_blind": true,
+    "arms_must_run_same_tasks": true
+  },
+  "environment": {
+    "owner": "skills/naviquest-chrome-devtools",
+    "note": "Chrome, launch flags, SDK injection, CDP/WebMCP transport, persistent sessions, reader settlement, and model warm-up are the skill host's contract, not this eval's. This file does not restate them.",
+    "ai_mode": "off",
+    "ai_mode_requires_when_on": "the skill warms the Chrome profile first; the harness then requires LanguageModel=available on the exact opened page before a measured tool call",
+    "reader_settling": "the skill host settles the page reader; retries count toward wall-clock and only the settled payload is charged to agent-visible tokens"
+  },
+  "budget": {
+    "trials": 1,
+    "network_calls": "unbounded — this eval is deliberately live; it is not a gate"
+  },
+  "decision_rule": "ACCEPT the retrieval claim when naviquest's tokens_per_answered_task and context_held are materially below the baseline's, the blind judge shows no quality regression, and every guardrail holds. A wall-clock loss does not block acceptance; an unstated AI_MODE does."
+}

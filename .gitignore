@@ -1,0 +1,23 @@
+node_modules
+dist
+.frozen
+
+# Yarn (node-modules linker; cache and state are not committed)
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+.pnp.*
+.octocode
+out
+# Chrome skill artifacts: browser profiles, run dirs, the bundled install script
+.naviquest
+
+# Dense-lane weights: not committed. The SDK answers `retrieval: "lexical"`
+# without them; this repo cannot regenerate the table.
+apps/demo/public/model/
+.SUBMITION
+
+# Agent-eval run artifacts (per-call traces, recorded answers, judge packs) are
+# dated measurements, not sources. Covered by the `out` rule above; named here
+# so the reason survives.
+# eval/agent/out/

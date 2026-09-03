@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>City notices — CityDesk</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header>
+  <strong>CityDesk</strong>
+  <nav aria-label="Main">
+    <a href="/">Services</a>
+    <a href="/parking.html">Parking</a>
+    <a href="/libraries.html">Libraries</a>
+    <a href="/notices.html" aria-current="page">Notices</a>
+    <a href="/#apps">My applications</a>
+  </nav>
+</header>
+
+<main id="main" class="page-wide">
+  <h1>Public notices</h1>
+  <p>Planning applications, traffic orders, and consultations currently open. Comments on planning are public and your name is published with the comment.</p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><b>41</b> live planning cases</div>
+    <div class="stat-card"><b>9</b> traffic orders this month</div>
+    <div class="stat-card"><b>21 days</b> standard comment window</div>
+    <div class="stat-card"><b>3</b> consultations closing soon</div>
+  </div>
+
+  <section id="planning" aria-labelledby="plan-h">
+    <h2 id="plan-h">Planning applications</h2>
+    <p>22 Harbour Lane (ref 2026/1142) proposes four new flats with no off-street parking. Neighbour comments close 18 September 2026. The officer report is due 2 October.</p>
+    <table class="data">
+      <thead>
+        <tr><th>Ref</th><th>Address</th><th>Proposal</th><th>Status</th><th>Comments close</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>2026/1142</td><td>22 Harbour Lane</td><td>Four flats, no parking</td><td>Consultation</td><td>18 Sep 2026</td></tr>
+        <tr><td>2026/1108</td><td>8 Mill Lane</td><td>Rear dormer and loft conversion</td><td>Consultation</td><td>12 Sep 2026</td></tr>
+        <tr><td>2026/1091</td><td>Unit 4 Crane Yard</td><td>Change of use to café</td><td>Consultation</td><td>20 Sep 2026</td></tr>
+        <tr><td>2026/1074</td><td>41 Eastfield Avenue</td><td>Single-storey rear extension</td><td>Officer report</td><td>closed</td></tr>
+        <tr><td>2026/1055</td><td>Riverside Library annex</td><td>Plant enclosure for boiler</td><td>Approved</td><td>—</td></tr>
+        <tr><td>2026/1033</td><td>15 Beacon View</td><td>Dropped kerb</td><td>Approved</td><td>—</td></tr>
+        <tr><td>2026/1019</td><td>3 Butcher Row</td><td>Illuminated fascia sign</td><td>Refused</td><td>—</td></tr>
+        <tr><td>2026/0994</td><td>90 Northgate Road</td><td>HMO for six occupants</td><td>Committee 24 Sep</td><td>closed</td></tr>
+        <tr><td>2026/0970</td><td>Bowling Green pavilion</td><td>Replacement roof</td><td>Approved</td><td>—</td></tr>
+        <tr><td>2026/0941</td><td>2 Ambulance Way</td><td>Staff cycle store</td><td>Approved</td><td>—</td></tr>
+        <tr><td>2026/0912</td><td>17 Lime Walk</td><td>Side extension</td><td>Withdrawn</td><td>—</td></tr>
+        <tr><td>2026/0888</td><td>Quay Street car park</td><td>EV chargers ×12</td><td>Consultation</td><td>25 Sep 2026</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="traffic" aria-labelledby="traffic-h">
+    <h2 id="traffic-h">Traffic regulation orders</h2>
+    <table class="data">
+      <thead>
+        <tr><th>Order</th><th>Street</th><th>Change</th><th>Dates</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>TRO/26/41</td><td>Quay Street</td><td>Bay suspension (water main)</td><td>8–10 Sep 2026</td></tr>
+        <tr><td>TRO/26/40</td><td>School Road</td><td>20 mph zone extension</td><td>from 14 Sep 2026</td></tr>
+        <tr><td>TRO/26/38</td><td>Market Square</td><td>Saturday pedestrianisation 10:00–16:00</td><td>trial to 31 Dec</td></tr>
+        <tr><td>TRO/26/36</td><td>Infirmary Road</td><td>No waiting, ambulance access</td><td>in force</td></tr>
+        <tr><td>TRO/26/33</td><td>Hillcrest Road</td><td>Resident bays painted</td><td>from 1 Oct 2026</td></tr>
+        <tr><td>TRO/26/31</td><td>Dock Walk</td><td>One-way southbound</td><td>objection period to 15 Sep</td></tr>
+        <tr><td>TRO/26/29</td><td>Elm Close</td><td>Disabled bay outside no. 12</td><td>in force</td></tr>
+        <tr><td>TRO/26/22</td><td>Northgate Road</td><td>Bus lane 07:00–10:00</td><td>in force</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="consult" aria-labelledby="consult-h">
+    <h2 id="consult-h">Consultations closing soon</h2>
+    <ul>
+      <li>Waste collection frequency (move recycling to weekly) — closes 11 September 2026</li>
+      <li>Library opening hours at Hillcrest — closes 18 September 2026</li>
+      <li>City centre 20 mph — closes 30 September 2026</li>
+    </ul>
+  </section>
+
+  <section id="alerts" aria-labelledby="alerts-h">
+    <h2 id="alerts-h">Email alerts</h2>
+    <p>Subscribe to a weekly digest of new planning cases and traffic orders in your postcode. We do not send marketing. You can leave at any time from the footer of each mail.</p>
+    <form id="notice-sub-form">
+      <div class="field">
+        <label for="notice-email">Email</label>
+        <input id="notice-email" name="email" type="email" autocomplete="email" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label for="notice-postcode">Postcode</label>
+        <input id="notice-postcode" name="postcode" type="text" value="BS1 4QH" autocomplete="postal-code">
+      </div>
+      <button type="button" id="subscribe-notices">Subscribe to city notices</button>
+      <p class="sub" id="notice-sub-status" role="status">Not subscribed.</p>
+    </form>
+  </section>
+</main>
+
+<footer><p>CityDesk is a fictional city portal. Software: <a href="/LICENSE.txt">MIT License</a> © 2026 Naviquest contributors.</p></footer>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Naviquest — research race</title>
+<style>
+  /* Four zones, in the order a viewer needs them: what is happening now →
+     the score → the evidence → the raw trail (folded away).
+     Density rule: every number appears exactly ONCE. The per-arm totals live in
+     the agent lanes, the ratios live in the scoreboard, and nothing repeats. */
+  :root{
+    --bg:#080b11; --panel:#111725; --panel2:#0c111a; --line:#1e2636; --line2:#2a3346;
+    --ink:#eef4fd; --dim:#93a0b6; --faint:#63718a;
+    --nq:#4ade80; --nqdim:#1c4a32; --base:#fb7185; --basedim:#55232d;
+    --accent:#7dd3fc; --amber:#fbbf24; --bar:#171e2b;
+    --good:#4ade80; --ok:#fbbf24; --bad:#fb7185; --none:#54637c;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font:14px/1.6 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  main{padding:26px 26px 56px;max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:26px;}
+  .num{font-variant-numeric:tabular-nums;}
+  .faint{color:var(--faint);}
+  code{background:#0c111c;padding:1px 6px;border-radius:5px;color:var(--accent);font-size:12.5px;}
+  h2.zone{font-size:12px;letter-spacing:1.7px;text-transform:uppercase;color:var(--faint);font-weight:700;margin:0 0 13px;}
+
+  header{padding:14px 26px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:11px;flex-wrap:wrap;position:sticky;top:0;background:rgba(8,11,17,.96);backdrop-filter:blur(10px);z-index:20;}
+  h1{font-size:16px;margin:0;font-weight:650;}
+  .sub{color:var(--dim);font-size:12.5px;flex:1 1 auto;}
+  .pill{font-size:11.5px;padding:3px 10px;border-radius:99px;border:1px solid var(--line2);color:var(--dim);white-space:nowrap;}
+  .pill.on{color:var(--nq);border-color:var(--nqdim);} .pill.off{color:var(--base);border-color:var(--basedim);}
+  .pill.warn{color:var(--amber);border-color:#4d3c14;}
+
+  /* ── zone 1: live ────────────────────────────────────────────── */
+  .rail{display:flex;align-items:center;margin-bottom:20px;}
+  .stage{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 11px;border:1px solid var(--line);border-radius:99px;font-size:12px;color:var(--faint);white-space:nowrap;}
+  .stage .idx{width:17px;height:17px;border-radius:99px;background:var(--line2);color:var(--dim);font-size:10.5px;display:grid;place-items:center;font-weight:700;}
+  .stage.active{color:var(--ink);border-color:#31507a;background:#0f1a2b;}
+  .stage.active .idx{background:var(--accent);color:#05121c;}
+  .stage.done{color:var(--nq);border-color:var(--nqdim);}
+  .stage.done .idx{background:var(--nq);color:#04150c;}
+  .railgap{flex:0 0 16px;height:1px;background:var(--line);}
+  @media(max-width:880px){.rail{flex-wrap:wrap;gap:7px;}.railgap{display:none;}}
+
+  .phase{font-size:22px;font-weight:650;letter-spacing:-.2px;}
+  .narr{color:#aebbd2;font-size:13px;margin:9px 0 20px;min-height:20px;}
+  .narr b{color:var(--ink);} .narr .t{font-family:ui-monospace,Menlo,monospace;color:var(--accent);font-size:12.2px;}
+  .aibanner{display:none;margin:0 0 20px;padding:11px 14px;border-left:2px solid var(--amber);border-radius:0 8px 8px 0;background:#150f04;color:#f0d18a;font-size:12.5px;line-height:1.6;}
+
+  .lanes{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:860px){.lanes{grid-template-columns:1fr;}}
+  .lane{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 18px;}
+  .lane.nq{border-top:2px solid var(--nq);} .lane.base{border-top:2px solid var(--base);}
+  .lane .who{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:650;}
+  .lane .tools{font-size:11.5px;color:var(--faint);margin:3px 0 16px;}
+  .lbl{font-size:9.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--faint);}
+  .qtext{font-size:13.5px;line-height:1.5;margin:5px 0 7px;min-height:42px;}
+  .qtext.done{color:var(--dim);}
+  .doneflag{color:var(--nq);font-size:9.5px;text-transform:uppercase;letter-spacing:.7px;font-weight:700;}
+  .site{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--accent);}
+  .badge{font-size:9.5px;padding:1px 7px;border-radius:99px;border:1px solid var(--line2);color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}
+  .badge:empty{display:none;}
+  .badge.read{color:var(--accent);border-color:#25455c;} .badge.crawl{color:var(--amber);border-color:#4d3c14;}
+  .ptrack{background:var(--bar);height:6px;border-radius:99px;overflow:hidden;margin-top:15px;}
+  .pfill{height:100%;border-radius:99px;transition:width .5s cubic-bezier(.4,0,.2,1);min-width:2px;}
+  .lane.nq .pfill{background:var(--nq);} .lane.base .pfill{background:var(--base);}
+  .pnum{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);margin-top:7px;}
+  /* per-arm totals live HERE and nowhere else */
+  .mini{display:flex;gap:18px;margin-top:15px;padding-top:14px;border-top:1px solid var(--line);}
+  .mini div{flex:1;}
+  .mini .n{font-size:17px;font-weight:650;line-height:1.2;}
+  .lane.nq .mini .n{color:var(--nq);} .lane.base .mini .n{color:var(--base);}
+  .mini .l{font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.4px;}
+  .dotlive{width:7px;height:7px;border-radius:99px;background:var(--nq);display:inline-block;animation:pulse 1.15s ease-in-out infinite;}
+  .lane.base .dotlive{background:var(--base);}
+  @keyframes pulse{0%,100%{opacity:.2;transform:scale(.8);}50%{opacity:1;transform:scale(1.2);}}
+  .dotidle{width:7px;height:7px;border-radius:99px;background:var(--none);display:inline-block;}
+  .same{margin-top:18px;font-size:12.5px;color:var(--dim);}
+  .same b{color:var(--good);} .same.bad b{color:var(--amber);}
+
+  /* ── zone 2: scoreboard ─────────────────────────────────────── */
+  .board h3{margin:0 0 18px;font-size:21px;font-weight:600;letter-spacing:-.2px;}
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  @media(max-width:900px){.tiles{grid-template-columns:1fr 1fr;}}
+  .tile{background:var(--panel);padding:18px 18px 16px;position:relative;}
+  .tile .big{font-size:32px;font-weight:700;line-height:1.05;letter-spacing:-1px;}
+  .tile .cap{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-top:6px;}
+  .tile .note{font-size:11.5px;color:var(--faint);margin-top:8px;line-height:1.45;}
+  .tile.win .big{color:var(--good);} .tile.tie .big{color:var(--accent);} .tile.cost .big{color:var(--amber);}
+  .tile .whotag{position:absolute;top:14px;right:16px;font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);}
+  .oneliner{margin-top:16px;font-size:12.8px;color:#b2c0d6;line-height:1.65;}
+
+  /* ── zone 3: evidence ───────────────────────────────────────── */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px;margin-bottom:22px;}
+  .cell{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:9px 11px;}
+  .cell.complete{border-color:var(--nqdim);}
+  .cell .s{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cell .ph{display:flex;gap:4px;margin-top:7px;align-items:center;}
+  .cell .ph .w{font-size:8.5px;color:var(--faint);width:24px;flex:0 0 24px;text-transform:uppercase;letter-spacing:.3px;}
+  .sq{flex:1;height:4px;border-radius:99px;background:var(--bar);}
+  .sq.nqdone{background:var(--nq);} .sq.basedone{background:var(--base);}
+  .sq.act{background:linear-gradient(90deg,var(--bar),var(--accent),var(--bar));background-size:200% 100%;animation:sweep 1.3s linear infinite;}
+  @keyframes sweep{0%{background-position:100% 0;}100%{background-position:-100% 0;}}
+
+  .qq{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:10px;}
+  .qq-head{background:var(--panel2);padding:10px 14px;display:flex;gap:10px;align-items:center;font-size:12.2px;flex-wrap:wrap;}
+  .qq-head .q{flex:1 1 320px;color:#c4d2e6;}
+  .qq-body{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);}
+  @media(max-width:780px){.qq-body{grid-template-columns:1fr;}}
+  .ans{background:var(--panel);padding:13px 14px;font-size:12.5px;}
+  .ans .ah{display:flex;align-items:center;gap:7px;font-size:9.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;}
+  .ans .atext{color:#c9d6e8;line-height:1.6;}
+  .ans .acost{margin-top:9px;font-size:11px;color:var(--faint);}
+  .vd{font-size:9.5px;padding:1px 7px;border-radius:99px;font-weight:700;letter-spacing:.3px;}
+  .vd.correct{background:#15361f;color:var(--good);} .vd.partial{background:#3a2e0e;color:var(--ok);}
+  .vd.wrong{background:#3d161e;color:var(--bad);} .vd.unsupported{background:#222935;color:#a9b6c9;}
+  .cheaper{font-size:10px;color:var(--nq);border:1px solid var(--nqdim);border-radius:99px;padding:1px 8px;}
+  .more{background:none;border:1px solid var(--line2);color:var(--dim);border-radius:99px;padding:6px 16px;font:inherit;font-size:12px;cursor:pointer;}
+  .more:hover{border-color:var(--accent);color:var(--ink);}
+
+  /* quality bars, folded into the evidence zone */
+  .quality{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;}
+  @media(max-width:780px){.quality{grid-template-columns:1fr;}}
+  .qcol h4{margin:0 0 8px;font-size:12px;display:flex;align-items:center;gap:7px;color:var(--dim);font-weight:600;}
+  .qbar{display:flex;height:24px;border-radius:7px;overflow:hidden;}
+  .qseg{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0a0e15;min-width:0;}
+  .qseg.correct{background:var(--good);} .qseg.partial{background:var(--ok);} .qseg.wrong{background:var(--bad);} .qseg.unsupported{background:var(--none);color:#cbd5e1;}
+  .qscore{margin-top:8px;font-size:12.5px;color:var(--dim);} .qscore b{font-size:18px;color:var(--ink);}
+  .empty{color:var(--faint);font-size:12.5px;}
+
+  /* ── zone 4: the trail, folded away ─────────────────────────── */
+  details{border-top:1px solid var(--line);padding-top:18px;}
+  summary{cursor:pointer;font-size:12px;letter-spacing:1.7px;text-transform:uppercase;color:var(--faint);font-weight:700;list-style:none;}
+  summary::-webkit-details-marker{display:none;}
+  summary::before{content:'▸ ';color:var(--accent);}
+  details[open] summary::before{content:'▾ ';}
+  .trail{margin-top:16px;}
+  .sitegrp{border:1px solid var(--line);border-radius:9px;margin-bottom:7px;overflow:hidden;}
+  .sitehead{background:var(--panel2);padding:8px 13px;font-size:11.5px;font-weight:650;color:var(--accent);display:flex;justify-content:space-between;gap:10px;}
+  .sitehead .muted{color:var(--faint);font-weight:400;}
+  .step{display:grid;grid-template-columns:42px 1fr 132px;gap:9px;align-items:center;padding:6px 13px;border-top:1px solid #151b26;font-size:11.5px;}
+  .step .arm{display:flex;align-items:center;gap:6px;color:var(--faint);font-size:10.5px;}
+  .tag{width:7px;height:7px;border-radius:99px;display:inline-block;flex:0 0 7px;}
+  .tag.naviquest{background:var(--nq);} .tag.baseline{background:var(--base);}
+  .chips{display:flex;gap:4px;flex-wrap:wrap;}
+  .chip{background:#0c131e;border:1px solid #222d43;border-radius:5px;padding:1px 6px;font-family:ui-monospace,Menlo,monospace;font-size:10px;color:var(--accent);}
+  .chip.slow{border-color:#4d3c14;color:var(--amber);}
+  .cost{text-align:right;color:var(--faint);font-size:10.5px;} .cost b{color:var(--ink);font-size:11.5px;}
+  .foot{color:var(--faint);font-size:11.5px;margin-top:12px;line-height:1.6;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Naviquest · research race</h1>
+  <span class="sub">two real agents · the same questions · six WebMCP tools vs a plain <code>fetch</code></span>
+  <span id="chrome" class="pill">—</span>
+  <span id="ai" class="pill">ai: —</span>
+  <span id="conn" class="pill">connecting…</span>
+</header>
+
+<main>
+  <!-- ══ 1. LIVE ══ -->
+  <section>
+    <div class="rail">
+      <div class="stage" id="st-setup"><span class="idx">1</span> Chrome + SDK</div><div class="railgap"></div>
+      <div class="stage" id="st-race"><span class="idx">2</span> racing</div><div class="railgap"></div>
+      <div class="stage" id="st-judge"><span class="idx">3</span> blind judging</div><div class="railgap"></div>
+      <div class="stage" id="st-done"><span class="idx">4</span> results</div>
+    </div>
+    <div class="phase" id="phase">waiting for the agents…</div>
+    <div class="narr" id="narr">Both agents get the identical question list. Every tool call is charged the same way — <code>chars/4</code> of the full result — and streams here over a WebSocket.</div>
+    <div class="aibanner" id="aibanner">
+      <b>On-device AI is ON.</b> Chrome scopes its Gemini Nano session to each document, so every page opened pays a one-off
+      <b>~25 s model warm-up</b> before the answer lanes engage; a warm query then answers in ~2.6 s. The slower clock is
+      <b>model setup, not answer latency</b> — and that warm-up query costs tokens too.
+    </div>
+    <div class="lanes">
+      <div class="lane nq">
+        <div class="who"><span id="nq-live" class="dotidle"></span> naviquest agent</div>
+        <div class="tools">six WebMCP tools · one warm tab · real Chrome over CDP</div>
+        <div class="lbl">now checking</div>
+        <div class="qtext" id="nq-q">waiting to start…</div>
+        <div><span class="site" id="nq-site"></span> <span class="badge" id="nq-phase"></span></div>
+        <div class="ptrack"><div class="pfill" id="nq-pfill" style="width:0%"></div></div>
+        <div class="pnum"><span class="num" id="nq-pnum">0 of 0</span><span class="num" id="nq-ptok">0 tok</span></div>
+        <div class="mini">
+          <div><div class="n num" id="nq-ctx">0</div><div class="l">peak context</div></div>
+          <div><div class="n num" id="nq-calls">0</div><div class="l">calls</div></div>
+          <div><div class="n num" id="nq-ms">0</div><div class="l">ms</div></div>
+        </div>
+      </div>
+      <div class="lane base">
+        <div class="who"><span id="base-live" class="dotidle"></span> baseline agent</div>
+        <div class="tools">fetch(url) → readability text + links · per-session cache</div>
+        <div class="lbl">now checking</div>
+        <div class="qtext" id="base-q">waiting to start…</div>
+        <div><span class="site" id="base-site"></span> <span class="badge" id="base-phase"></span></div>
+        <div class="ptrack"><div class="pfill" id="base-pfill" style="width:0%"></div></div>
+        <div class="pnum"><span class="num" id="base-pnum">0 of 0</span><span class="num" id="base-ptok">0 tok</span></div>
+        <div class="mini">
+          <div><div class="n num" id="base-ctx">0</div><div class="l">peak context</div></div>
+          <div><div class="n num" id="base-calls">0</div><div class="l">fetches</div></div>
+          <div><div class="n num" id="base-ms">0</div><div class="l">ms</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="same" id="same">same-question check: <b id="same-b">waiting…</b></div>
+  </section>
+
+  <!-- ══ 2. SCOREBOARD ══ -->
+  <section class="board">
+    <h2 class="zone">scoreboard</h2>
+    <h3 id="board-head">running…</h3>
+    <div class="tiles">
+      <div class="tile tie"><span class="whotag" id="t-qual-who"></span><div class="big" id="t-qual">—</div><div class="cap">answer quality</div><div class="note" id="t-qual-note">blind judge · no gold key</div></div>
+      <div class="tile win"><span class="whotag">naviquest</span><div class="big" id="t-tokens">—</div><div class="cap">fewer tokens</div><div class="note" id="t-tokens-note">per question, median</div></div>
+      <div class="tile win"><span class="whotag">naviquest</span><div class="big" id="t-ctx">—</div><div class="cap">smaller peak context</div><div class="note" id="t-ctx-note">largest single payload</div></div>
+      <div class="tile cost"><span class="whotag" id="t-speed-who">baseline</span><div class="big" id="t-speed">—</div><div class="cap">faster wall-clock</div><div class="note" id="t-speed-note">the honest trade-off</div></div>
+    </div>
+    <div class="oneliner" id="oneliner">Bounded per-tool retrieval keeps every result flat (~1–2k tokens) no matter how big the page is, so the agent's context never scales with the page. The trade-off is honest — one <code>fetch</code> is a single round-trip.</div>
+  </section>
+
+  <!-- ══ 3. EVIDENCE ══ -->
+  <section>
+    <h2 class="zone">coverage &amp; evidence</h2>
+    <div class="grid" id="grid"></div>
+
+    <div id="judge-empty" class="empty" style="margin-bottom:22px">Quality bars appear once the blind judge has scored both arms.</div>
+    <div id="judge" class="quality" style="display:none">
+      <div class="qcol"><h4><span class="tag naviquest"></span> naviquest</h4><div class="qbar" id="q-nq"></div><div class="qscore" id="qs-nq"></div></div>
+      <div class="qcol"><h4><span class="tag baseline"></span> baseline</h4><div class="qbar" id="q-base"></div><div class="qscore" id="qs-base"></div></div>
+    </div>
+
+    <div id="qq"></div>
+    <div class="empty" id="qq-empty">Answers appear here as each agent finishes a question.</div>
+    <div style="margin-top:6px"><button class="more" id="more" style="display:none"></button></div>
+  </section>
+
+  <!-- ══ 4. THE TRAIL ══ -->
+  <details>
+    <summary>every tool call, as it happened</summary>
+    <div class="trail" id="activity"></div>
+    <div class="foot">One row per call; chips are the tools the agent chose, in order. Amber marks a call over 5 s — on AI runs that is the on-device model warm-up, not answer time. Streamed over a WebSocket; the page never polls, and the server replays the whole run to a tab opened late.</div>
+  </details>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const fmt=n=>Math.round(n||0).toLocaleString('en-US');
+const esc=s=>String(s==null?'':s).replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+const pre={naviquest:'nq',baseline:'base'};
+const cssId=s=>String(s).replace(/[^a-z0-9]/gi,'_');
+const PREVIEW=3;   // answers shown before "show all" — the list is 20 pairs long
+let state,groups,plan,findings,verdicts,lastNow,idleTimer,judged,expanded,aiOn=false;
+
+function reset(){
+  state={naviquest:{tokens:0,calls:0,ms:0,pages:0,ctx:0,done:0},baseline:{tokens:0,calls:0,ms:0,pages:0,ctx:0,done:0}};
+  groups={};findings={naviquest:new Map(),baseline:new Map()};verdicts=null;lastNow={};idleTimer={};judged=false;expanded=false;
+  $('activity').innerHTML='';$('qq').innerHTML='';$('qq-empty').style.display='';$('more').style.display='none';
+  for(const a of ['naviquest','baseline']){renderStats(a);setNow(a,null);renderProg(a);}
+  $('judge').style.display='none';$('judge-empty').style.display='';
+  $('phase').textContent='waiting for the agents…';renderSame();stage('setup');
+}
+/** Four beats: setup → race → judge → results. A viewer should know where the
+ *  run is without reading a single number. */
+function stage(now){
+  const order=['setup','race','judge','done'],at=order.indexOf(now);
+  order.forEach((s,i)=>{const el=$('st-'+s);if(el)el.className='stage'+(i<at?' done':i===at?' active':'');});
+}
+function renderStats(a){const s=state[a],p=pre[a];
+  $(`${p}-ctx`).textContent=fmt(s.ctx);$(`${p}-calls`).textContent=fmt(s.calls);$(`${p}-ms`).textContent=fmt(s.ms);}
+function renderProg(a){const p=pre[a],s=state[a],total=(plan&&plan.findings)||0;
+  $(`${p}-pfill`).style.width=(total?100*Math.min(s.done,total)/total:0)+'%';
+  $(`${p}-pnum`).textContent=`${s.done} of ${total||'—'}`;
+  $(`${p}-ptok`).textContent=fmt(s.tokens)+' tok';}
+function setNow(a,now){const p=pre[a],el=$(`${p}-q`);
+  const allDone=plan&&plan.findings&&state[a].done>=plan.findings;
+  if(now){lastNow[a]=now;el.className='qtext';el.textContent=now.task;
+    $(`${p}-site`).textContent=now.site||'';
+    const b=$(`${p}-phase`);b.textContent=now.phase||'';b.className='badge'+(now.phase?' '+now.phase:'');
+  }else if(allDone){el.className='qtext done';el.innerHTML='<span class="doneflag">done</span> — answered all '+plan.findings+' questions';
+    $(`${p}-site`).textContent='';const b=$(`${p}-phase`);b.textContent='';b.className='badge';
+  }else if(lastNow[a]){ // a blank lane reads as "stopped"; it is between findings
+    el.className='qtext done';el.innerHTML='<span class="doneflag">just finished</span> '+esc(lastNow[a].task);
+  }else{el.className='qtext';el.textContent='waiting to start…';}
+  $(`${p}-live`).className=now?'dotlive':'dotidle';
+  clearTimeout(idleTimer[a]);
+  if(now)idleTimer[a]=setTimeout(()=>{const d=$(`${p}-live`);if(d)d.className='dotidle';},12000);
+}
+function renderSame(){
+  const nq=[...findings.naviquest.keys()],bs=[...findings.baseline.keys()];
+  const box=$('same'),b=$('same-b');
+  if(!nq.length&&!bs.length){b.textContent='waiting…';box.className='same';return;}
+  const shared=nq.filter(k=>findings.baseline.has(k)).length;
+  const onlyNq=nq.length-shared,onlyBs=bs.length-shared,total=(plan&&plan.findings)||0;
+  const clean=!onlyNq&&!onlyBs;
+  b.textContent=clean?`identical — all ${shared} of ${total||'?'} questions answered by BOTH agents, verbatim`
+    :`${shared} answered by both · ${onlyNq} only naviquest · ${onlyBs} only baseline (still running)`;
+  box.className='same'+(clean?'':' bad');
+}
+function buildGrid(){
+  if(!plan||!plan.sites)return;
+  const g=$('grid');g.innerHTML='';
+  for(const site of plan.sites){
+    const id=cssId(site);const el=document.createElement('div');el.className='cell';el.id='cell-'+id;
+    el.innerHTML=`<div class="s">${esc(site)}</div>
+      <div class="ph"><span class="w">nq</span><span class="sq" id="sq-${id}-nq-read"></span><span class="sq" id="sq-${id}-nq-crawl"></span></div>
+      <div class="ph"><span class="w">base</span><span class="sq" id="sq-${id}-base-read"></span><span class="sq" id="sq-${id}-base-crawl"></span></div>`;
+    g.appendChild(el);
+  }
+}
+function markCell(site,arm,phase,status){
+  const el=$(`sq-${cssId(site)}-${arm==='naviquest'?'nq':'base'}-${phase||'read'}`);
+  if(!el)return;
+  const settled=el.classList.contains('nqdone')||el.classList.contains('basedone');
+  if(settled&&status!=='done')return;
+  el.className='sq'+(status==='done'?(arm==='naviquest'?' nqdone':' basedone'):status==='active'?' act':'');
+  const cell=$('cell-'+cssId(site));
+  if(cell&&[...cell.querySelectorAll('.sq')].every(s=>s.classList.contains('nqdone')||s.classList.contains('basedone')))cell.classList.add('complete');
+}
+function x(a,b){return(a&&b)?(Math.max(a,b)/Math.max(1,Math.min(a,b))).toFixed(1)+'×':'—';}
+/** Live tiles before the judge lands, so the board is never four dashes on camera. */
+function renderTilesLive(){
+  if(judged)return;const S=state;
+  if(S.naviquest.tokens&&S.baseline.tokens){
+    $('t-tokens').textContent=x(S.naviquest.tokens,S.baseline.tokens);
+    $('t-tokens-note').textContent='running total — median lands after judging';}
+  if(S.naviquest.ctx&&S.baseline.ctx){
+    $('t-ctx').textContent=x(S.naviquest.ctx,S.baseline.ctx);
+    $('t-ctx-note').innerHTML=fmt(S.naviquest.ctx)+' vs '+fmt(S.baseline.ctx)+' tok';}
+  if(S.naviquest.ms&&S.baseline.ms){
+    $('t-speed').textContent=x(S.naviquest.ms,S.baseline.ms);
+    $('t-speed-who').textContent=S.naviquest.ms<=S.baseline.ms?'naviquest':'baseline';
+    $('t-speed-note').textContent='running total';}
+}
+function narrate(o){
+  const who=o.arm==='naviquest'?'<b>naviquest</b>':'<b>baseline</b>';
+  if(o.ev==='finding'){
+    $('narr').innerHTML=`${who} finished a ${o.phase||''} question on <span class="t">${esc(o.site)}</span> — <b>${fmt(o.tokens)}</b> tokens, ${o.calls} call${o.calls===1?'':'s'}, largest payload held <b>${fmt(o.contextHeld)}</b> tok.`;
+    return;}
+  const tools=(o.tool||'').split('→').filter(Boolean).map(t=>`<span class="t">${esc(t)}</span>`).join(' → ');
+  const slow=o.ms>5000?` <span style="color:var(--amber)">(${(o.ms/1000).toFixed(1)} s — on-device model warm-up, not answer time)</span>`:'';
+  $('narr').innerHTML=`${who} called ${tools||'a tool'} on <span class="t">${esc(o.site||'—')}</span> — charged <b>${fmt(o.tokens)}</b> tokens in ${fmt(o.ms)} ms.${slow}`;
+  if(!judged){$('phase').textContent='agents are racing';stage('race');}
+}
+function groupEl(site){
+  if(groups[site])return groups[site];
+  const wrap=document.createElement('div');wrap.className='sitegrp';
+  wrap.innerHTML=`<div class="sitehead"><span>${esc(site)}</span><span class="muted num" id="gh-${cssId(site)}"></span></div>`;
+  $('activity').appendChild(wrap);groups[site]={el:wrap,tok:{naviquest:0,baseline:0}};return groups[site];
+}
+function absorb(o){const s=state[o.arm];
+  if(o.totals){s.tokens=o.totals.tokens;s.calls=o.totals.calls;s.ms=o.totals.ms;s.pages=o.totals.pages;
+    if(o.totals.done!=null)s.done=o.totals.done;}
+  return s;}
+function onCall(o){
+  const s=state[o.arm];if(!s)return;absorb(o);
+  s.ctx=Math.max(s.ctx,o.contextHeld!=null?o.contextHeld:o.tokens);
+  if(o.task){setNow(o.arm,{site:o.site,task:o.task,phase:o.phase});markCell(o.site,o.arm,o.phase,'active');}
+  renderStats(o.arm);renderProg(o.arm);renderTilesLive();narrate(o);
+  const g=groupEl(o.site||'—');g.tok[o.arm]=(g.tok[o.arm]||0)+(o.tokens||0);
+  const row=document.createElement('div');row.className='step';
+  const slow=o.ms>5000?' slow':'';
+  const chips=(o.tool||'').split('→').filter(Boolean).map(t=>`<span class="chip${slow}">${esc(t)}</span>`).join('');
+  row.innerHTML=`<div class="arm"><span class="tag ${o.arm}"></span>${o.arm==='naviquest'?'nq':'base'}</div>`+
+    `<div><div class="chips">${chips||'<span class="chip">call</span>'}</div><div class="foot" style="margin:2px 0 0">${esc((o.note||'').slice(0,110))}</div></div>`+
+    `<div class="cost num"><b>${fmt(o.tokens)}</b> tok · ${fmt(o.ms)}ms</div>`;
+  g.el.appendChild(row);
+  const gh=$('gh-'+cssId(o.site||'—'));if(gh)gh.textContent=`nq ${fmt(g.tok.naviquest||0)} · base ${fmt(g.tok.baseline||0)} tok`;
+}
+function onFinding(o){
+  const s=state[o.arm];if(!s)return;absorb(o);
+  s.ctx=Math.max(s.ctx,o.contextHeld||0);
+  findings[o.arm].set(`${o.site} :: ${o.task}`,o);
+  markCell(o.site,o.arm,o.phase,'done');
+  setNow(o.arm,null);renderStats(o.arm);renderProg(o.arm);renderTilesLive();renderSame();narrate(o);renderPairs();
+  if(plan&&plan.findings&&state.naviquest.done>=plan.findings&&state.baseline.done>=plan.findings&&!judged){
+    $('phase').textContent='both agents finished — judging next';
+    $('board-head').textContent='Cost is in. Quality lands when the blind judge returns.';stage('judge');}
+}
+function vdOf(arm,site,task){
+  if(!verdicts)return null;
+  const v=verdicts.find(v=>v.arm===arm&&v.site===site&&v.task===task);
+  return v?v.quality:null;
+}
+function renderPairs(){
+  const keys=[...new Set([...findings.naviquest.keys(),...findings.baseline.keys()])];
+  if(!keys.length)return;
+  $('qq-empty').style.display='none';
+  // 20 pairs at full length is a wall of text. Show a few; let the viewer open
+  // the rest when they want them.
+  const shown=expanded?keys:keys.slice(0,PREVIEW);
+  $('qq').innerHTML=shown.map(k=>{
+    const n=findings.naviquest.get(k),b=findings.baseline.get(k),any=n||b;
+    const ratio=(n&&b&&n.tokens)?(b.tokens/n.tokens):0;
+    const cell=(f,arm)=>{
+      if(!f)return `<div class="ans"><div class="ah"><span class="tag ${arm}"></span>${arm}</div><div class="atext faint">still working…</div></div>`;
+      const q=vdOf(arm,f.site,f.task);
+      return `<div class="ans"><div class="ah"><span class="tag ${arm}"></span>${arm}${q?` <span class="vd ${q}">${q}</span>`:''}</div>`+
+        `<div class="atext">${esc(f.answer||'')}</div>`+
+        `<div class="acost num">${fmt(f.tokens)} tok · ${f.calls} call${f.calls===1?'':'s'} · peak ${fmt(f.contextHeld)} tok</div></div>`;};
+    return `<div class="qq"><div class="qq-head"><span class="site">${esc(any.site)}</span>`+
+      (any.phase?`<span class="badge ${any.phase}">${any.phase}</span>`:'')+
+      `<span class="q">${esc(any.task)}</span>`+
+      (ratio>1.2?`<span class="cheaper num">${ratio.toFixed(1)}× cheaper</span>`:'')+
+      `</div><div class="qq-body">${cell(n,'naviquest')}${cell(b,'baseline')}</div></div>`;
+  }).join('');
+  const btn=$('more');
+  if(keys.length>PREVIEW){btn.style.display='';btn.textContent=expanded?'show fewer':`show all ${keys.length} questions`;}
+  else btn.style.display='none';
+}
+$('more').onclick=()=>{expanded=!expanded;renderPairs();};
+
+function renderJudge(ratings){
+  if(!ratings)return;judged=true;
+  $('judge-empty').style.display='none';$('judge').style.display='grid';
+  for(const arm of ['naviquest','baseline']){
+    const r=ratings[arm];if(!r)continue;const p=pre[arm],c=r.counts||{};
+    $(`q-${p}`).innerHTML=['correct','partial','wrong','unsupported'].map(k=>{const n=c[k]||0;
+      return n?`<div class="qseg ${k}" style="flex:${n} 0 0" title="${k}: ${n}">${n}</div>`:'';}).join('');
+    $(`qs-${p}`).innerHTML=`<b>${r.qualityScore}</b> / ${r.tasks} correct`;
+  }
+  $('phase').textContent='judged — results above';stage('done');
+}
+function renderVerdict(v,ratings){
+  if(!v)return;judged=true;
+  const nqQ=(v.quality_naviquest||'').split(' ')[0],bsQ=(v.quality_baseline||'').split(' ')[0];
+  const tie=nqQ===bsQ;
+  $('board-head').textContent=tie?'Same answers — for a fraction of the context'
+    :'Answer quality and context cost, side by side';
+  $('t-qual').textContent=tie?'TIE':`${nqQ} · ${bsQ}`;
+  $('t-qual-who').textContent=tie?'both arms':'nq · base';
+  $('t-qual-note').innerHTML=tie?`both <b>${nqQ}</b> — blind judge, no gold key`:`naviquest ${nqQ} · baseline ${bsQ}`;
+  $('t-tokens').textContent=(v.tokens_x_per_task_median||v.tokens_x_sum)+'×';
+  $('t-tokens-note').innerHTML=`per question, median${v.tokens_x_per_task_iqr?` · IQR ${v.tokens_x_per_task_iqr[0]}–${v.tokens_x_per_task_iqr[1]}×`:''}<br>${v.tokens_x_sum}× overall`;
+  $('t-ctx').textContent=v.context_held_x+'×';
+  if(ratings)$('t-ctx-note').innerHTML=`${fmt(ratings.naviquest.peakContextHeld)} vs ${fmt(ratings.baseline.peakContextHeld)} tok`;
+  // Use the server's raw-value reciprocal; 1/round(x,1) inflates the figure
+  // (0.4269 → 0.4 → "2.5×" for a true 2.3×).
+  const spd=v.speed_x, disp=v.speed_x_display!=null?v.speed_x_display:(spd>=1?spd:+(1/spd).toFixed(1));
+  $('t-speed').textContent=disp+'×';
+  $('t-speed-who').textContent=v.speed_faster_arm||(spd>=1?'naviquest':'baseline');
+  $('t-speed-note').innerHTML=spd>=1?'naviquest faster':'one <code>fetch</code> is a single round-trip';
+  if(ratings&&ratings.naviquest&&ratings.naviquest.warmupMs)
+    $('t-speed-note').innerHTML+=`<br>${fmt(ratings.naviquest.warmupMs)} ms of that was one-off model setup`;
+  else if(aiOn)
+    $('t-speed-note').innerHTML+='<br>mostly per-page model setup, not answer time';
+  stage('done');
+}
+function setEnv(o){
+  if(typeof o.connectedOverCDP==='boolean'){
+    $('ai').textContent='ai: '+(o.aiMode||'—');
+    $('ai').className='pill '+(o.aiMode==='on'?'warn':'');
+    if(o.aiMode==='on'){$('aibanner').style.display='block';aiOn=true;}}
+  if(o.chromeVersion){$('chrome').textContent=o.chromeVersion;$('chrome').className='pill on';stage('race');}
+  if(o.plan){plan=o.plan;buildGrid();for(const a of ['naviquest','baseline'])renderProg(a);
+    if(plan.sites&&plan.sites.length)
+      $('oneliner').innerHTML=`Bounded per-tool retrieval keeps every result flat (~1–2k tokens) no matter how big the page is, so the agent's context never scales with the page. The trade-off is honest — one <code>fetch</code> is a single round-trip. This run: <b>${plan.findings} questions across ${plan.sites.length} sites</b>, single run, POC scale.`;}
+}
+function connect(){
+  const ws=new WebSocket(`ws://${location.host}`);
+  ws.onopen=()=>{$('conn').textContent='live';$('conn').className='pill on';};
+  ws.onclose=()=>{$('conn').textContent='disconnected';$('conn').className='pill off';setTimeout(connect,1500);};
+  ws.onmessage=e=>{
+    const o=JSON.parse(e.data);
+    if(o.ev==='snapshot'){
+      reset();setEnv(o);
+      if(o.verdicts)verdicts=o.verdicts;
+      for(const ev of(o.events||[])){if(ev.ev==='call')onCall(ev);else if(ev.ev==='finding')onFinding(ev);}
+      if(o.ratings)renderJudge(o.ratings);
+      if(o.verdict)renderVerdict(o.verdict,o.ratings);
+      renderPairs();renderSame();return;}
+    setEnv(o);
+    if(o.ev==='reset')reset();
+    if(o.ev==='call')onCall(o);
+    if(o.ev==='finding')onFinding(o);
+    if(o.ev==='judge'){verdicts=o.verdicts||verdicts;renderJudge(o.ratings);renderVerdict(o.verdict,o.ratings);renderPairs();}
+  };
+}
+reset();connect();
+</script>
+</body>
+</html>

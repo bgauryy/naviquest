@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Riverside services — with embeds</title></head>
+<body>
+<!-- REGRESSION FIXTURE (2026-09-03). The install script runs on every new
+     document, so a page with iframes registers the six tool NAMES once per
+     frame. invokeWebMCP used to demand exactly one match and threw
+     "resolved to N frames" on every call — which broke every tool on any real
+     page with an embed (react.dev, vuejs.org, measured in eval/research).
+     The host now addresses the MAIN frame and treats sub-frame registrations as
+     noise. The sub-frames here deliberately carry DECOY text so a regression
+     that reads the wrong frame produces a wrong answer, not just a pass. -->
+<main id="main">
+  <h1>Riverside city services</h1>
+  <section>
+    <h2>Library hours</h2>
+    <p>The central library closes at 6 p.m. on weekdays and stays shut on public holidays.</p>
+  </section>
+</main>
+<iframe src="frame-decoy.html" title="Sponsored embed" width="300" height="120"></iframe>
+<iframe sandbox="allow-scripts" src="frame-decoy.html" title="Sandboxed embed" width="300" height="120"></iframe>
+</body>
+</html>

@@ -98,6 +98,11 @@ const pageDirectory = {
   '/workspace.html': { title: 'My City service history', noun: 'resident task', route: '/workspace.html#tasks', action: 'Review task route' },
 } as const;
 const directory = pageDirectory[location.pathname as keyof typeof pageDirectory];
+const directoryTask = directory ? [{
+  name: `${directory.title}: 650 rendered records`,
+  locate: '#service-directory',
+  how: 'This first-party directory has 650 fictional records; search live page content only for a specific record or status.',
+}] : [];
 if (directory) {
   const section = document.createElement('section');
   section.id = 'service-directory';
@@ -135,6 +140,7 @@ const naviquest = await createNaviquest({
       { name: 'Report a street light', locate: '#report-light' },
       { name: 'Book a library PC', locate: '#book-pc' },
       { name: 'Subscribe to city notices', locate: '#subscribe-notices' },
+      ...directoryTask,
     ],
     constraints: ['Do not submit payment or bank details. Hand off to the human.'],
   },

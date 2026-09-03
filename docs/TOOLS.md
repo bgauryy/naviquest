@@ -72,10 +72,10 @@ Keeping these separate prevents one generic search tool from mixing page scope w
 | `locate_control` — which controls might do X | `resolve_address` — can I act on *this* one, right now |
 | `describe_app().nonText` — how many holes exist | `describe_app({ opaque: true })` — where they are, with boxes |
 | `agentic_content` `list`/`find` — which PAGE of this site | `agentic_content` `read` — that document's text |
-| `query_selector` semantic views — document-order actions/regions | *(copy its continuation; no expansion semantics)* |
+| `query_selector` semantic views — document-order actions/regions | *(follow `pagination.next`; no expansion semantics)* |
 | `describe_app` — the whole page, structurally | *(it is the top of the tree)* |
 
-Every surface is bounded. If a response omits a list suffix, it returns a revision-bound continuation recovering the first omitted row. NL survey tools are ranked; semantic inventories and manifest lists preserve document/author order. Expansion consumes an address for page regions and controls; `agentic_content({ intent: "read" })` consumes a URL the same tool previously vouched for — distinct authorities.
+Every surface is bounded. If a response omits a list suffix, it returns a revision-bound `pagination.next` call recovering the first omitted row. NL survey tools are ranked; semantic inventories and manifest lists preserve document/author order. Expansion consumes an address for page regions and controls; `agentic_content({ intent: "read" })` consumes a URL the same tool previously vouched for — distinct authorities.
 
 **None of the six is redundant.** The `resolve_address` region path is not `find_on_page` with a bigger limit — it merges sibling chunks under one heading path, giving *the section* rather than the chunk that ranked. `resolve_address` is not `locate_control` again — locate ranks by description, resolve re-verifies one address against the live DOM. `describe_app` opaque mode is ~10× the cost of its counts, so it is opt-in. `agentic_content` answers about pages the agent is *not* on, which indexing the current DOM cannot reach.
 
@@ -115,7 +115,7 @@ The same principle runs through the response shapes: `retrieval` names the lane 
 | `authored` | **Optional first-party overlay.** Present only when the embedder passed `createNaviquest({ orientation })`. Omit that option (the default, including inject-into-any-site) and this key is absent — the agent still orients from `view`/outline/`locate_control`. Provenance-tagged; does not replace live structure. `tasks[].locate` is a CSS selector (same grammar as `exclude[]`) — copy into `query_selector({ selector })`, never `locate_control`. Included in `_etag`/`since`, not in `changesSince` |
 | modal state | Whether a dialog is open, and therefore whether everything behind it is inert |
 | `recommendation` | Present **only** when the page is small enough that the whole a11y tree is cheaper than these tools |
-| `orientationTotals`, `continuations` | Complete sizes and one cursor per independently paged orientation list |
+| `orientationTotals`, `pagination.next` | Complete sizes and one next call per independently paged orientation list |
 | `_observation` | Cursor for a later bounded semantic comparison |
 
 On a canvas app the entire a11y tree is a few hundred tokens and three tool calls cost more than sending it — measured at 103% on Excalidraw. Rather than lose that comparison, `describe_app` says so and tells the agent to ask for the tree instead.
@@ -193,7 +193,7 @@ Ranked content regions, each carrying the controls that belong to it.
 ```
 
 - **`kind` prevents section blindness.** Outline headings participate in the same lexical corpus as passages; a `section` result is addressable and resolvable directly, not a post-ranking guess. Parent headings stay discoverable even when matching words aren't repeated in child prose.
-- **Decision fields are machine-routable.** `status`, `recommendedAddress`, `confidenceBasis`, and `nextCalls` let a client continue from evidence without reading prose or grader labels. `goal: "navigate"` adds a `locate_control` continuation. `goal` is an open string so the SDK doesn't freeze every agent's vocabulary.
+- **Decision fields are machine-routable.** `status`, `recommendedAddress`, `confidenceBasis`, and `nextCalls` let a client continue from evidence without reading prose or grader labels. `goal: "navigate"` adds a `locate_control` next call. `goal` is an open string so the SDK doesn't freeze every agent's vocabulary.
 - **`answerStatus` fails closed.** `supported` = `answer` cleared the gate. `unsupported` = related passages found but none supports an answer (evidence only; `hint` + `next` route to the addressable outline). `no-match` = no passage found. Never treat an absent `answer` as permission to report rank 1.
 - **`answer.verified` and `answer.unverified` are not opposites.** `verified: true` means an on-device model was asked whether the sentence answers the question and said yes. `unverified: "NO_ON_DEVICE_READER"` means the check never ran (no Prompt API, model not downloaded, no user gesture, cold session) — so the answer is lexical extraction only. Both absent is not a third state: exactly one appears whenever `answer.source` is `passage`. A rejected sentence never reaches the caller, so there is no `verified: false`. `confidence` already reads `low` in the unverified case.
 - **`answer` is one answer, not one per result.** A single clearly-sourced, addressable answer costs ~100 tokens; a span per result would fight the budget. When nothing clears the floor the field is absent and the preceding status explains why. `queryCoverage` reports informative-term occurrence in the top passage and heading path — not a correctness probability.
@@ -202,7 +202,7 @@ Ranked content regions, each carrying the controls that belong to it.
 - **`match` says why this excerpt is shown.** `exact` = case/diacritic-folded literal occurs in the authored chunk, so a long excerpt is centred on it. `ranked` = BM25/hybrid retrieved without a literal occurrence. Exact never promotes a ranked hit; a punctuation-only literal BM25 can't represent is appended after all ranked hits with score zero, recovering identifiers while preserving relevance order.
 - **Repeated chunks from one headed region are coalesced exactly.** Resolving any chunk under one heading reads the same merged region, so `find_on_page` keeps the highest-ranked row and reports `coalesced` instead of paying repeatedly. Pathless chunks are never grouped by fuzzy text. Live probes 2026-09-01: est. result-token reductions of 13.8% (React), 16.0% (CNN), 26.2% (Wikipedia); MDN a no-op. Rank 1 and answer extraction unchanged.
 
-Copy `continuation` to read lower-ranked regions; it contains the query, limit, offset, and projection revision. A page change returns `STALE_CURSOR` rather than shifting the offset onto a different region. `since` works too, keyed on the exact query page.
+Call the returned `pagination.next` entry to read lower-ranked regions; its arguments contain the query, limit, offset, and projection revision. A page change returns `STALE_CURSOR` rather than shifting the offset onto a different region. `since` works too, keyed on the exact query page.
 
 ---
 
@@ -258,7 +258,7 @@ Available affordances: `pagination-next`, `pagination-prev`, `search`, `submit`,
 
 A weighted structural prior (boosting `main` over `banner`, picker roles for "choose/select") was tried and **made every configuration worse** (VALIDATION § 8.3). Ranking is left alone; filters only remove candidates already ruled out.
 
-Copy `continuation` for lower-ranked candidates. Pagination ranks the complete filtered population before slicing, preserves every filter, and fails with `STALE_CURSOR` if the projection changes.
+Call the returned `pagination.next` entry for lower-ranked candidates. Pagination ranks the complete filtered population before slicing, preserves every filter, and fails with `STALE_CURSOR` if the projection changes.
 
 ### When nothing matches
 
@@ -332,7 +332,7 @@ A `find_on_page` passage was the right region but got trimmed. Expand it.
 Sibling chunks under the same heading path are merged automatically, so you get *the section* rather than the chunk that ranked. Two flags:
 
 - **`collapsed` + `revealedBy`** — part of the region is inside a closed `<details>` or collapsed disclosure. The text is included, but nothing inside can be activated until that control opens; `revealedBy` names it.
-- **`truncated` + `continuation`** — text or controls hit the budget. `continuation` advances both `textOffset` and `controlOffset`, so repeated calls reconstruct the complete region without repeating either stream.
+- **`truncated` + `pagination.next`** — text or controls hit the budget. The next call advances both `textOffset` and `controlOffset`, so repeated calls reconstruct the complete region without repeating either stream.
 
 ---
 
@@ -355,7 +355,7 @@ What is on this page that the **text index could not read** — and where to loo
   }],
   "total": 43,
   "truncated": 33,
-  "continuation": { "opaque": true, "limit": 10, "offset": 10, "revision": 7 },
+  "pagination": { "complete": false, "next": [{ "tool": "describe_app", "arguments": { "opaque": true, "limit": 10, "offset": 10, "revision": 7 } }] },
   "note": "These carry meaning the text index cannot read. filenameHint is a
            low-confidence guess, never author-written text."
 }
@@ -390,9 +390,9 @@ query_selector({ view: 'scopes', limit: 10 })
 query_selector({ view: 'forms', limit: 10 })
 ```
 
-Semantic views return `matched`, `returned`, `truncated`, projection `coverage`, and a copyable `continuation`. Structure coalesces chunks that resolve to the same region, so every row has a distinct re-readable address. Continuations include the projection `revision`; after a re-render the tool returns `STALE_CURSOR` rather than shifting an offset onto different elements. They preserve page size and every filter.
+Semantic views return `matched`, `returned`, `truncated`, projection `coverage`, and a copyable `pagination.next`. Structure coalesces chunks that resolve to the same region, so every row has a distinct re-readable address. Next-call arguments include the projection `revision`; after a re-render the tool returns `STALE_CURSOR` rather than shifting an offset onto different elements. They preserve page size and every filter.
 
-Exact mode reports `documentsSearched`, `shadowTreesSearched`, registered-root coverage, and a `scope` path on every default result. Standard CSS has no shadow-piercing combinator, so a resolved shadow control returns no document selector; its address, box, and page-side `resolve(address)` remain valid. Boxes from the top document declare `boxSpace: "top-level-viewport"`; boxes inside a readable frame declare `boxSpace: "scope-viewport"` (the owning frame document's viewport, not a guessed top-page translation). Use a frame-scoped browser companion for pixel actions; do not sum nested frame offsets from this payload. Exact-mode continuations retain a bounded snapshot of the complete ordered scope/element identities (the selector can reach outside the observed projection and into frames). Every identity is compared exactly: a changed population returns `STALE_CURSOR`, an evicted abandoned cursor returns `CURSOR_EXPIRED`. Both fail closed.
+Exact mode reports `documentsSearched`, `shadowTreesSearched`, registered-root coverage, and a `scope` path on every default result. Standard CSS has no shadow-piercing combinator, so a resolved shadow control returns no document selector; its address, box, and page-side `resolve(address)` remain valid. Boxes from the top document declare `boxSpace: "top-level-viewport"`; boxes inside a readable frame declare `boxSpace: "scope-viewport"` (the owning frame document's viewport, not a guessed top-page translation). Use a frame-scoped browser companion for pixel actions; do not sum nested frame offsets from this payload. Exact-mode next calls retain a bounded snapshot of the complete ordered scope/element identities (the selector can reach outside the observed projection and into frames). Every identity is compared exactly: a changed population returns `STALE_CURSOR`, an evicted abandoned cursor returns `CURSOR_EXPIRED`. Both fail closed.
 
 Live action state is re-read at answer time. Beyond ARIA state it reports native `required`, `readOnly`, focus, validity, and `valuePresent`. The last is deliberately boolean: it lets an agent continue a form without exposing a password or resident-entered value through a read-only sensor.
 
@@ -452,7 +452,7 @@ Measured across five large sites, 36 iframes: **18 same-origin reachable, 18 cro
 ### Other behaviours
 
 - A selector that doesn't parse returns `{ error: "INVALID_INPUT" }` with the parser's own message. `querySelectorAll` throws `SyntaxError`, and nothing validates a tool call.
-- `matched` is the true total even when `limit` cuts the page. Copy `continuation` to recover the remainder.
+- `matched` is the true total even when `limit` cuts the page. Call `pagination.next` to recover the remainder.
 - `address: null` with `addressNote` means the element is real but outside the indexed root — not addressable, and saying so beats a silent `null`.
 - Text runs through the host's `redact` hook exactly as indexed text does.
 
@@ -527,9 +527,9 @@ agentic_content({ intent: 'read', url: 'https://example.gov.uk/tax.md' })
 
 Handing back a page's markup is precisely the cost Naviquest exists to remove; once on that page, `find_on_page` answers the same question better and cheaper. `read` is for the text documents a manifest points at — `.md`, `.txt`, JSON — and says so for anything else.
 
-Long text is fetched once into a per-instance cache bounded by `maxBytes`, then paged with `{ offset, revision }`. Copy `continuation` verbatim. The revision is an exact content etag, so pages from two document versions cannot be spliced. If the source exceeds `maxBytes`, the tool returns `NAVIGATE_INSTEAD` with `reason: "SOURCE_TOO_LARGE"`; it does not expose a permanently partial prefix.
+Long text is fetched once into a per-instance cache bounded by `maxBytes`, then paged with `{ offset, revision }`. Call the returned `pagination.next` entry unchanged. The revision is an exact content etag, so pages from two document versions cannot be spliced. If the source exceeds `maxBytes`, the tool returns `NAVIGATE_INSTEAD` with `reason: "SOURCE_TOO_LARGE"`; it does not expose a permanently partial prefix.
 
-`list` and `find` use the same continuation contract. `list` pages the complete manifest or fallback-link population; `find` ranks the complete population before slicing. Both hash the population into `revision`, and budget pressure advances the cursor by rows actually sent.
+`list` and `find` use the same pagination contract. `list` pages the complete manifest or fallback-link population; `find` ranks the complete population before slicing. Both hash the population into `revision`, and budget pressure advances the next-call cursor by rows actually sent.
 
 ### When the site publishes nothing
 
@@ -573,7 +573,7 @@ Real case: `github.com/llms.txt` is **117 entries, 116 on `docs.github.com`.** T
 
 **Same-origin, in every path.** A tool that fetches an agent-supplied URL is a request-forgery primitive pointed at whatever the user's cookies can reach. Every manifest entry is resolved against `location.origin` and dropped if it lands elsewhere; `read` additionally refuses any URL not already in the manifest this origin published — so a same-origin `/admin/keys` an agent invents is refused just as a cross-origin URL is. Requests go out with `credentials: 'omit'`.
 
-**Bounded in time and size.** 4 s timeout, 512 kB cap on a fetched body, 20,000 characters per `read` page before a revision-bound continuation. A hung request must not hang the agent's turn; a byte-capped source is named separately.
+**Bounded in time and size.** 4 s timeout, 512 kB cap on a fetched body, 20,000 characters per `read` page before a revision-bound next call. A hung request must not hang the agent's turn; a byte-capped source is named separately.
 
 ### Uniform asynchronous calls
 
@@ -596,8 +596,8 @@ Retrieval is useless if an agent can't act on what it read. Every result carries
   "anchorText": "…",        // only when there is no heading path to identify the region
   "resolveWith": "read_region",  // present on REGION addresses only
   "headingScope": "outline", // outline rows read through their descendant subsections
-  "textOffset": 1200,       // only on a truncated region continuation
-  "textRevision": 7         // stale continuations fail instead of shifting
+  "textOffset": 1200,       // only in truncated-region next-call arguments
+  "textRevision": 7         // stale next calls fail instead of shifting
 }
 ```
 
@@ -777,7 +777,7 @@ Underscored, because it is metadata *about* the answer, not part of it — and t
 
 ### Every omission is recoverable
 
-`truncated` reports how much remains and `continuation` starts at the first omitted row or character. Orientation uses `continuations` because its outline, landmarks, trail, and reachable views have independent offsets. Search excerpts declare their source length and carry a region address for the complete read. Copy a continuation verbatim; revision mismatches return `STALE_CURSOR` rather than combining pages from different DOM or document versions.
+`truncated` reports how much remains and `pagination.next` starts at the first omitted row or character. Orientation may return several next calls because its outline, landmarks, trail, and reachable views have independent offsets. Search excerpts declare their source length and carry a region address for the complete read. Call the returned next entry unchanged; revision mismatches return `STALE_CURSOR` rather than combining pages from different DOM or document versions.
 
 ### Errors are values, never throws
 

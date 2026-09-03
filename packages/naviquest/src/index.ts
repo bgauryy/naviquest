@@ -1318,9 +1318,9 @@ export type {
   DescribeAppInput, DescribeAppModeSuccess, DescribeAppResult,
   DescribeAppSectionSuccess, DescribeAppSuccess, DescribeModalState,
   FindOnPageInput, FindOnPageResult, FindOnPageSuccess,
-  OrientationContinuation, OrientationSection, PageInput,
+  OrientationSection, PageInput,
   LocateControlInput, LocateControlNoMatch, LocateControlResult, LocateControlSuccess,
   OutlineRow, QuerySelectorField, QuerySelectorInput, QuerySelectorResult, QuerySelectorSuccess,
   ResolveAddressInput, ResolveAddressMiss, ResolveAddressResult, ResolveAddressSuccess, ResolveRegionSuccess,
-  SummaryEnvelope, ToolEnvelope, ToolFailure, ToolSuccessEnvelope, NaviquestTools,
+  PaginationEnvelope, SummaryEnvelope, ToolEnvelope, ToolFailure, ToolSuccessEnvelope, NaviquestTools,
 } from './tools/tool-contracts.ts';

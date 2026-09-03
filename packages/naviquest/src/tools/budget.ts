@@ -79,7 +79,19 @@ export function createBudgeter(
   pageTokens: (() => number) | undefined,
   adaptive: AdaptiveBudget,
 ): Budgeter {
-  const normalizeEnvelope = (o: ToolPayload): ToolPayload => {
+  /** One cursor shape for every tool; applied before measuring. */
+  const pagination = (tool: ToolName, o: ToolPayload): ToolPayload => {
+    delete o.pagination;
+    const cursors = o.continuation ? [o.continuation] : o.continuations && Object.values(o.continuations);
+    if (cursors) o.pagination = { complete: false,
+      next: cursors.map((args: unknown) => ({ tool, arguments: args })) };
+    // The per-tool cursor names are implementation detail. The common envelope
+    // above is the only agent-facing pagination contract.
+    delete o.continuation;
+    delete o.continuations;
+    return o;
+  };
+  const normalizeEnvelope = (tool: ToolName, o: ToolPayload): ToolPayload => {
     if (Array.isArray(o.results) && typeof o.returned === 'number') {
       o.returned = o.results.length;
       if (typeof o.matched === 'number' && typeof o.truncated === 'number') {
@@ -89,7 +101,7 @@ export function createBudgeter(
         o.truncated = Math.max(0, o.matched - (o.offset ?? 0) - o.returned);
       }
     }
-    return o;
+    return pagination(tool, o);
   };
   const capFor = (tool: ToolName): number => {
     const fixed = budgets[tool];
@@ -111,14 +123,14 @@ export function createBudgeter(
      */
     budget(toolName, out, shrink) {
       const cap = capFor(toolName);
-      let cur = normalizeEnvelope(out); let step = 0; let best = cur; let bestSize = est(cur);
+      let cur = normalizeEnvelope(toolName, out); let step = 0; let best = cur; let bestSize = est(cur);
       while (bestSize > cap && step < adaptive.maxShrinkSteps) {
-        const next = normalizeEnvelope(shrink({ ...cur }, ++step));
+        const next = normalizeEnvelope(toolName, shrink({ ...cur }, ++step));
         const size = est(next);
         if (size < bestSize) { best = next; bestSize = size; }
         cur = next;
       }
-      cur = normalizeEnvelope(best);
+      cur = best;
       cur._tokens = est(cur);
       cur._budget = cap;
       if (cur._tokens > cap) cur._overBudget = true;   // declared, never silent

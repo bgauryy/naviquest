@@ -1,0 +1,46 @@
+# CityDesk demo
+
+In-page exercise of `naviquest`. This directory is a private app workspace.
+
+```bash
+yarn install                    # repository root
+yarn dev                        # http://localhost:5310
+yarn workspace demo-app build   # packages/demo-app/out
+```
+
+The page imports the SDK by package name (`naviquest`). The build first builds that workspace dependency, then Vite resolves its published `exports` map. The generated app therefore contains the same `dist/` SDK implementation that an installed consumer receives.
+
+## Deploy to Vercel
+
+Import the repository from GitHub with these settings:
+
+- **Framework Preset:** Vite
+- **Root Directory:** `packages/demo-app`
+- **Include source files outside of the Root Directory:** enabled (Vercel enables this by default for current projects)
+
+Do not point Vercel at the repository-level `dist/demo` directory. The project-local [`vercel.json`](./vercel.json) runs `yarn build` and publishes `out`, relative to the selected Root Directory. That build includes all five HTML routes, files from `public/`, generated assets, the Naviquest SDK, and its worker.
+
+Query flags:
+
+- `?worker=1` — retrieval in a module worker
+- `?dense=1` — worker plus int8 embeddings, if `public/model/` exists (gitignored)
+
+CityDesk is a WebMCP **provider**, not an in-page agent: it calls only
+`createNaviquest()` and `register()`. The browser agent invokes the six tools and
+receives their `_tokens` / `_budget` metadata; the demo page never calls a tool
+itself. Enable `chrome://flags/#enable-webmcp-testing` to register them on
+`document.modelContext` during local development.
+
+Multi-page portal (same SDK on every route):
+
+| Route | What is on it |
+|---|---|
+| `/` | Dashboard, agent instructions, rebates, waste, council tax, housing, schools, 520 recycled applications, private block |
+| `/parking.html` | Eight zones with prices, renewal, visitor rules, recent decisions |
+| `/libraries.html` | Branch hours, PC booking, loans/fines, September events |
+| `/notices.html` | Planning table, traffic orders, consultations, email alerts |
+| `/workspace.html` | Fake resident SPA workspace: tasks, applications, household details, and activity |
+
+Fixtures exist to stress the SDK (closed shadow, recycling list, excluded `[data-private]`, modal, non-text). CityDesk **opts in** to `orientation` and `exclude` as a first-party overlay — that is demo customization, not a requirement. The same six tools navigate any site without them (`yarn eval --live --url …`). Sensors live under [`eval/`](../../eval).
+
+This demonstration is [MIT licensed](../../LICENSE) ([`/LICENSE.txt`](./public/LICENSE.txt) on the running app).

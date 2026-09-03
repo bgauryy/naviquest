@@ -9,7 +9,7 @@
  * no `types`, no build step. Inside this workspace that works, because Vite
  * resolves the source and transpiles it. Outside it does not: webpack, Next.js,
  * Create React App and Jest all exclude `node_modules` from transpilation by
- * default, so `yarn add @naviquest/core` followed by the import in the README's
+ * default, so `yarn add naviquest` followed by the import in the README's
  * install block fails for most of the ecosystem. It was the most-read six lines
  * in the repository and one of the only things in it that nothing measured.
  *
@@ -175,7 +175,7 @@ let eagerMetafile: esbuild.Metafile | undefined;
 /** MIT attribution for the one bundled dependency. `legalComments: 'none'`
  *  strips comments from the dependency's own source, so the notice is
  *  re-attached here rather than left to survive minification by luck. */
-const BANNER = `/*! @naviquest/core — MIT
+const BANNER = `/*! naviquest — MIT
  * Bundles dom-accessibility-api (MIT) © 2020 Sebastian Silbermann
  * https://github.com/eps1lon/dom-accessibility-api
  */`;
@@ -278,7 +278,7 @@ if (missingDeclarations.length) {
 /**
  * An export is a promise to every package resolver, even when the README never
  * mentions it. A leftover `./internals` export once survived a deleted entry
- * file, so builds passed while `import('@naviquest/core/internals')` failed only
+ * file, so builds passed while `import('naviquest/internals')` failed only
  * for a consumer. Validate every local leaf after JS and declarations exist: source,
  * types, development, and default conditions all have to resolve in the exact
  * package tree that would be published.
@@ -305,12 +305,12 @@ try {
   const archive = path.join(consumerRoot, 'naviquest.tgz');
   execFileSync('yarn', ['pack', '--out', archive], { cwd: HERE, stdio: 'pipe' });
   const consumer = path.join(consumerRoot, 'consumer');
-  const installed = path.join(consumer, 'node_modules', '@naviquest', 'core');
+  const installed = path.join(consumer, 'node_modules', 'naviquest');
   fs.mkdirSync(installed, { recursive: true });
   execFileSync('tar', ['-xzf', archive, '--strip-components=1', '-C', installed]);
   fs.writeFileSync(path.join(consumer, 'package.json'), '{"type":"module"}\n');
   fs.writeFileSync(path.join(consumer, 'smoke.mjs'),
-    "import { createNaviquest } from '@naviquest/core';\n"
+    "import { createNaviquest } from 'naviquest';\n"
     + "if (typeof createNaviquest !== 'function') throw new Error('missing createNaviquest export');\n");
   execFileSync(process.execPath, ['--conditions=development', 'smoke.mjs'],
     { cwd: consumer, stdio: 'pipe' });

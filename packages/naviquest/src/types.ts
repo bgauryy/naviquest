@@ -293,14 +293,14 @@ export interface Address {
   /** Only minted for regions with no heading to name them. */
   anchorText?: string;
   /**
-   * Present only on a `read_region` continuation. Character offset into the
+   * Present only in `read_region` next-call arguments. Character offset into the
    * resolved region text; copied back verbatim so pagination advances instead
    * of returning the same truncated prefix forever.
    */
   textOffset?: number;
   /** Number of region controls already returned alongside earlier text pages. */
   controlOffset?: number;
-  /** Projection revision paired with `textOffset`; stale continuations fail. */
+  /** Projection revision paired with `textOffset`; stale next calls fail. */
   textRevision?: number;
   /**
    * Which tool this address is FOR.

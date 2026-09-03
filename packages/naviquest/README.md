@@ -1,4 +1,4 @@
-# @naviquest/core
+# naviquest
 
 <p align="center">
   <img src="../../assets/naviquest-logo.png" alt="" width="280">
@@ -102,7 +102,7 @@ and useful next calls—not an overwhelming dump of HTML.
 
 Two callers, one implementation:
 
-1. **Website.** Install `@naviquest/core`, call `createNaviquest()`, and register
+1. **Website.** Install `naviquest`, call `createNaviquest()`, and register
    the tools on `document.modelContext`. The site can also provide first-party
    orientation or exclude private regions.
 2. **Automation platform.** Inject the same SDK before navigation. The page does
@@ -118,25 +118,48 @@ not Naviquest, performs browser input:
 ![The agent calls Naviquest through the browser. Naviquest returns bounded results and addresses, while the host performs browser actions.](../../assets/naviquest-flow.svg)
 
 This directory contains the repository's only publishable package. The
-[CityDesk demo](../../apps/demo), [evaluation sensors](../../eval),
+[CityDesk demo](../demo-app), [evaluation sensors](../../eval),
 [architecture](../../ARCHITECTURE.md), [browser API map](../../docs/TECHNOLOGY.md),
 and [tool wire contract](../../docs/TOOLS.md) document the rest of the system.
 
 ## Install
 
 ```bash
-yarn add @naviquest/core
+yarn add naviquest
 ```
 
 ```ts
-import { createNaviquest } from '@naviquest/core';
+import { createNaviquest } from 'naviquest';
 
 const wf = await createNaviquest();
+
+// The six tools are usable right here, on the returned object, whether or not
+// the browser has WebMCP. `register()` is what additionally publishes them to
+// an agent through `document.modelContext`.
+const hit = await wf.tools.find_on_page({ query: 'refund policy' });
+if (hit.outcome !== 'error') console.log(hit.answer?.text, hit.results[0]?.address);
+
+// Registration is a progressive enhancement, NOT a precondition. In a browser
+// without WebMCP it resolves `{ registered: false, reason: 'WebMCP
+// modelContext is unavailable' }` — report it, do not throw on it, or the SDK
+// breaks on every browser that has not shipped the surface yet.
 const registration = await wf.register();
-if (!registration.registered) {
-  throw new Error(registration.reason ?? 'Naviquest registration failed');
+if (!registration.registered) console.info('naviquest tools not published:', registration.reason);
+```
+
+Every tool resolves to a success payload **or** a `ToolFailure`, so narrow before
+reading fields. `outcome === 'error'` is the check; the negative branch is the
+one that narrows, which is why the pattern is an early return:
+
+```ts
+const hit = await wf.tools.find_on_page({ query: 'refund policy' });
+if (hit.outcome === 'error') {
+  console.warn(hit.error, hit.hint); // `error` is the machine-readable class
+  return;
 }
-await wf.tools.find_on_page({ query: 'refund policy' });
+hit.answer?.text;        // grounded answer, when one is supported
+hit.results[0]?.text;    // ranked passages
+hit.results[0]?.address; // re-resolvable identity, not a stored DOM node
 ```
 
 Always `await createNaviquest(...)`. Tool calls return promises in every
@@ -167,14 +190,145 @@ const page = await wf.tools.describe_app();
 // page.authored?.tasks[0].locate → query_selector({ selector })
 ```
 
-Published exports:
+Published exports. Two specifiers, and **every published condition points at
+`dist/`** — there is no `development` condition exposing raw TypeScript, because
+a consumer's bundler excludes `node_modules` from transpilation:
 
-| Specifier | Development | Default |
-|---|---|---|
-| `@naviquest/core` | `src/index.ts` | `dist/index.js` + `dist/index.d.ts` |
-| `@naviquest/core/worker` | `src/worker.ts` | `dist/worker.js` + `dist/worker.d.ts` |
+| Specifier | Types | Default | Source in this workspace |
+|---|---|---|---|
+| `naviquest` | `dist/index.d.ts` | `dist/index.js` | `src/index.ts` |
+| `naviquest/worker` | `dist/worker.d.ts` | `dist/worker.js` | `src/worker.ts` |
 
-`window.naviquest` is the only documented global (closed-shadow `registerRegion`). There is no `window.__*` seam.
+The last column is resolved by the repo's Vite alias and `tsconfig.json` paths
+only, so the demo and the evals exercise live source; an installed consumer
+always gets `dist/`. `yarn build` proves it by packing the tarball, extracting it
+into a throwaway `node_modules/naviquest` outside this workspace, and importing
+`createNaviquest` from it — a leftover export whose entry file no longer exists
+fails the build there rather than in someone's app.
+
+`window.naviquest` is the only documented global, and **the SDK does not set it
+— the host does.** It exists for one job: a component that owns a *closed*
+shadow root cannot be reached by page JavaScript, so it hands its own root in
+from `connectedCallback()`. Assign it once at bootstrap if your page has such
+components, and skip it otherwise. There is no `window.__*` seam.
+
+## Use it in a page
+
+The SDK is browser-only ESM with no backend, no keys, and no build-time page
+markup. A page needs three things: get the instance, call the tools, resolve the
+address before you act on it.
+
+### With a bundler (Vite, webpack, Next.js, …)
+
+```ts
+// app.ts — loaded as <script type="module">
+import { createNaviquest } from 'naviquest';
+
+const naviquest = await createNaviquest({
+  root: 'main',                   // optional: a strict content boundary
+  exclude: ['[data-private]'],    // optional: never walked, never indexed
+});
+
+// Only needed if your components own CLOSED shadow roots (see above).
+window.naviquest = naviquest;
+
+// Publish to an agent when the browser has WebMCP. Never a precondition.
+await naviquest.register();
+
+const hit = await naviquest.tools.find_on_page({ query: 'how do I renew a permit?' });
+if (hit.outcome !== 'error') {
+  console.log(hit.answer?.text);
+  // ContentAnswer.address is `Address | null`, so pass the address, not the answer.
+  if (hit.answer?.address) naviquest.highlightAddress(hit.answer.address);
+}
+```
+
+### Without a bundler, from a plain HTML file
+
+Bare specifiers need an import map. Point it at the package's `dist/`, which is
+what `yarn build` produces and what an install ships:
+
+```html
+<!doctype html>
+<meta charset="utf-8">
+<title>naviquest demo</title>
+
+<main>
+  <h1>Parking permits</h1>
+  <p>Residential permits renew every 12 months. Renewal costs $45.</p>
+  <button id="renew">Renew permit</button>
+</main>
+
+<input id="q" value="how much does renewal cost?">
+<button id="go">Ask the page</button>
+<pre id="out"></pre>
+
+<script type="importmap">
+{
+  "imports": {
+    "naviquest": "/node_modules/naviquest/dist/index.js"
+  }
+}
+</script>
+
+<script type="module">
+  import { createNaviquest } from 'naviquest';
+
+  const naviquest = await createNaviquest({ root: 'main' });
+  await naviquest.register();          // no-op without WebMCP; tools still work
+
+  const out = document.getElementById('out');
+  document.getElementById('go').addEventListener('click', async () => {
+    const hit = await naviquest.tools.find_on_page({
+      query: document.getElementById('q').value,
+    });
+    if (hit.outcome === 'error') { out.textContent = `${hit.error}: ${hit.hint ?? ''}`; return; }
+    out.textContent = hit.answer?.text ?? hit.results[0]?.text ?? 'no match';
+    if (hit.answer?.address) naviquest.highlightAddress(hit.answer.address);
+  });
+</script>
+```
+
+Serve it over HTTP rather than `file://` — module scripts, the worker lane and
+the on-device AI APIs all need an origin. The relative `./chunks/*` and
+`./worker.js` requests the entry makes resolve from the mapped URL, so the whole
+`dist/` directory has to be reachable, not just `index.js`.
+
+### Acting on a result
+
+Naviquest returns bounded data and a re-resolvable address; **the host performs
+the input.** Resolve immediately before acting, because the page may have
+changed since the search:
+
+```ts
+// locate_control takes `description`, not `query` — it asks for a control by
+// the job it does, and answers with ranked candidates plus one recommendation.
+const found = await naviquest.tools.locate_control({ description: 'renew my permit' });
+if (found.outcome === 'error' || !found.recommendedAddress) return;
+
+const live = await naviquest.tools.resolve_address({ address: found.recommendedAddress });
+if (live.outcome === 'error' || live.status !== 'RESOLVED') return; // AMBIGUOUS / NOT_FOUND
+if ('kind' in live) return;   // the region shape; `expand: true` asks for it deliberately
+if (live.actionable && live.selectorOfLastResort) {
+  document.querySelector(live.selectorOfLastResort)?.click();
+}
+```
+
+`selectorOfLastResort` is named for what it is: a selector is the fallback for a
+host that must use one, and it ships with a `selectorWarning`. Prefer acting on
+the element your own automation layer already holds.
+
+### Run the demo in this repository
+
+```bash
+yarn install
+yarn dev      # CityDesk on http://localhost:5310
+```
+
+`packages/demo-app/` is the worked example of everything above — closed shadow roots,
+`exclude`, a first-party `orientation` overlay, and an in-page assistant driving
+the same six tools. It imports the SDK **by package name**, so a broken export
+fails there rather than after publish.
 
 ## Six tools
 
@@ -188,7 +342,7 @@ read:
 | `locate_control` | Which control performs this job? | Ranked live controls with state, context, confidence, and refinements |
 | `resolve_address` | Can I read or act on this result now? | Full region text, or fresh control state, box, navigation data, and a last-resort selector |
 | `query_selector` | What actions, forms, regions, scopes, or exact CSS matches exist? | Bounded semantic inventories or guarded exact inspection |
-| `agentic_content` | Does the answer live elsewhere on this site? | Same-origin agent resources and verified live-page continuations |
+| `agentic_content` | Does the answer live elsewhere on this site? | Same-origin agent resources and verified live-page pagination |
 
 The normal flow is:
 
@@ -212,7 +366,7 @@ meaningful regions that the text index cannot read. See the
 |---|---|---|
 | Inline lexical BM25 | `createNaviquest()` | Yes |
 | Worker lexical | `{ worker: true }` or demo `?worker=1` | No — scheduling, not a faster index |
-| Hybrid (BM25 + int8 dense) | `{ worker: true, dense: true \| 'eager' }` or demo `?dense=1` | No — needs weights under `apps/demo/public/model/` |
+| Hybrid (BM25 + int8 dense) | `{ worker: true, dense: true \| 'eager' }` or demo `?dense=1` | No — needs weights under `packages/demo-app/public/model/` |
 
 Exact matching accompanies BM25 in both lexical lanes. The dense lane uses a
 static int8 Model2Vec table; it performs row lookup, pooling, and cosine scoring
@@ -331,7 +485,7 @@ Judgement (caps, weights, or vendor selectors) lives in `config.ts` and is overr
 | Resource | Purpose |
 |---|---|
 | [Architecture](../../ARCHITECTURE.md) | End-to-end mechanism, invariants, and module boundaries |
-| [Tool reference](../../docs/TOOLS.md) | Six tool schemas, routing, continuations, and failures |
+| [Tool reference](../../docs/TOOLS.md) | Six tool schemas, routing, pagination, and failures |
 | [Technology map](../../docs/TECHNOLOGY.md) | Browser APIs, feature detection, and platform constraints |
 | [Evaluation](../../docs/EVAL.md) | Deterministic gates, live sensors, and measured evidence |
 | [Testing](../../docs/TESTING.md) | Demo, injection, and live-browser workflows |

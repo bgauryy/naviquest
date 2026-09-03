@@ -157,7 +157,7 @@ describe('every tool survives the wire', () => {
    * itself stringified by the platform. Anything non-serialisable in a payload
    * — a leaked `Element`, a `Map`, a cycle — either throws inside `execute` or
    * silently arrives as `{}`. Only the round trip can tell.
-   */
+  */
   it.each(Object.keys(MINIMAL))('%s returns a parseable payload', async (name) => {
     const { createNaviquest } = await import('../src/index.ts');
     const api = await createNaviquest({});
@@ -168,6 +168,25 @@ describe('every tool survives the wire', () => {
     expect(wire.content[0].type).toBe('text');
     expect(payload).toBeTypeOf('object');
     expect(payload.error).toBeUndefined();
+  });
+
+  it('gives every truncated inventory a copyable, uniform next call', async () => {
+    document.body.innerHTML = `<main><h1>Services</h1><button>Apply</button><button>Cancel</button><button>Save</button></main>`;
+    const { createNaviquest } = await import('../src/index.ts');
+    const api = await createNaviquest({});
+    await api.register();
+
+    const first = await callTool(mc, 'query_selector', { selector: 'button', limit: 1 });
+    const next = first.payload.pagination?.next;
+    expect(first.payload.truncated).toBeGreaterThan(0);
+    expect(first.payload.pagination?.complete).toBe(false);
+    expect(next).toHaveLength(1);
+    expect(first.payload.continuation).toBeUndefined();
+    expect(next[0]).toMatchObject({ tool: 'query_selector', arguments: { selector: 'button', offset: 1 } });
+
+    const second = await callTool(mc, next[0].tool, next[0].arguments);
+    expect(second.payload.offset).toBe(1);
+    expect(second.payload.error).toBeUndefined();
   });
 
   /** The address round trip is the one cross-tool contract: an address minted

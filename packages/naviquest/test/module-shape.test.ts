@@ -11,8 +11,8 @@
  * So a bundle can ship green while every dynamic consumer of that module is
  * broken. This SDK dynamically imports three of its own modules and is itself
  * dynamically imported by hosts, which makes the entry namespace the one that
- * matters most: if `@naviquest/core` ever exports `then`, every host doing
- * `await import('@naviquest/core')` breaks at once.
+ * matters most: if `naviquest` ever exports `then`, every host doing
+ * `await import('naviquest')` breaks at once.
  *
  * Cheap to assert, so it is asserted rather than remembered.
  */

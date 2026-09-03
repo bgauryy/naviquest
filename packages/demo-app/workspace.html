@@ -105,6 +105,33 @@
       <li><time datetime="2026-08-28">28 Aug</time><div><b>Parking permit renewed</b><p>Permit P-88421 is active in Zone C until 31 March 2027.</p></div></li>
     </ol>
   </section>
+
+  <section id="payments" aria-labelledby="payments-h">
+    <h2 id="payments-h">Payments and statements</h2>
+    <p>Review payments, credits, and upcoming charges for linked CityDesk services. This demo never takes payment details.</p>
+    <table class="data"><thead><tr><th>Date</th><th>Service</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+      <tr><td>1 Sep</td><td>Parking permit</td><td>Renewal reminder</td><td>£45.00 due 1 Apr</td><td>Upcoming</td></tr>
+      <tr><td>30 Aug</td><td>Bulk waste</td><td>Collection booking</td><td>£18.00</td><td>Paid</td></tr>
+      <tr><td>20 Aug</td><td>Council tax</td><td>Monthly instalment</td><td>£126.40</td><td>Paid</td></tr>
+      <tr><td>12 Aug</td><td>Parking permit</td><td>Zone-change credit</td><td>£41.50</td><td>Available credit</td></tr>
+    </tbody></table>
+    <button type="button">Prepare service statement</button>
+  </section>
+
+  <section id="notifications" aria-labelledby="notifications-h">
+    <h2 id="notifications-h">Notification centre</h2>
+    <div class="workspace-grid">
+      <article class="workspace-card"><h3>Deadlines</h3><p>Energy rebate documents due 30 September. Parking renewal opens 18 February.</p><button type="button">Review reminders</button></article>
+      <article class="workspace-card"><h3>Local services</h3><p>Planning notice near Marlow Terrace; Riverside Library closure this Sunday.</p><a href="/notices.html#planning">Review local notices</a></article>
+      <article class="workspace-card"><h3>Delivery preferences</h3><p>Service email is enabled. Text messages are disabled. Marketing is disabled.</p><button type="button">Change notification settings</button></article>
+    </div>
+  </section>
+
+  <section id="support" aria-labelledby="support-h">
+    <h2 id="support-h">Get help with a request</h2>
+    <p>Use the reference number on an application or booking to ask about a specific service. Account support can explain a status but cannot decide eligibility, alter a planning case, or take payment information by email.</p>
+    <form><div class="field"><label for="support-ref">Reference number</label><input id="support-ref" name="reference" placeholder="For example RB-2026-4471"></div><div class="field"><label for="support-topic">Topic</label><select id="support-topic"><option>Application status</option><option>Parking permit</option><option>Waste collection</option><option>Account access</option></select></div><button type="button">Find support options</button></form>
+  </section>
 </main>
 
 <footer><p>CityDesk is a fictional city portal. Software: <a href="/LICENSE.txt">MIT License</a> © 2026 Naviquest contributors.</p></footer>

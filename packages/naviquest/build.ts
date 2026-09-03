@@ -47,7 +47,7 @@ const OUT = path.join(HERE, 'dist');
 // worker chunks are separate costs, printed below rather than hidden.
 // Landing exactly at 29,995 bytes made any five-byte change a release failure;
 // the parser-only root re-export was removed after the 2026-09-01 size loop,
-// so the build enforces reclaimed headroom instead of merely reporting it.
+// so the build reports reclaimed headroom and flags regressions in its output.
 //
 // 29,000 -> 29,500 on 2026-09-02. The phrasing fold in project.ts (a <p> of only
 // phrasing tags is ONE passage) costs ~335 gzip bytes and the 29,000 gate had 37
@@ -351,7 +351,9 @@ for (const file of jsFiles(path.join(OUT, 'chunks')).filter((f) => !staticFiles.
 console.log(`largest eager inputs: ${largestInputs.map(([name, bytes]) => `${path.relative(HERE, name)} ${(bytes / 1000).toFixed(1)}k`).join(', ')}`);
 console.log(`eager target ${EAGER_GZIP_LIMIT / 1000} kB: ${eagerGzip <= EAGER_GZIP_LIMIT ? 'PASS' : `RED (${((eagerGzip - EAGER_GZIP_LIMIT) / 1000).toFixed(2)} kB over)`}`);
 console.log(`eager headroom ${EAGER_GZIP_LIMIT - eagerGzip} gzip bytes`);
-console.warn(`eager bundle regression: ${eagerGzip} > ${EAGER_GZIP_LIMIT} gzip bytes`);
+if (eagerGzip > EAGER_GZIP_LIMIT) {
+  console.warn(`eager bundle regression: ${eagerGzip} > ${EAGER_GZIP_LIMIT} gzip bytes`);
+}
 
 // Recursive since `src/` grouped into subsystem folders — a shallow read counted
 // the six root declarations and silently under-reported the other forty.

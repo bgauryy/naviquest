@@ -15,8 +15,8 @@ export default defineConfig({
   preview: { port: 5311 },
   worker: { format: 'es' },
   build: {
-    // Vercel owns packages/demo-app as its Root Directory and publishes `out`.
-    outDir: 'out',
+    // The Vercel project is rooted at the repository and publishes root `out`.
+    outDir: '../../out',
     emptyOutDir: true,
     target: 'es2023',
     rollupOptions: {

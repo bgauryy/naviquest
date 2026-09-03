@@ -5,7 +5,7 @@ In-page exercise of `naviquest`. This directory is a private app workspace.
 ```bash
 yarn install                    # repository root
 yarn dev                        # http://localhost:5310
-yarn workspace demo-app build   # packages/demo-app/out
+yarn workspace demo-app build   # out/ at the repository root
 ```
 
 The page imports the SDK by package name (`naviquest`). The build first builds that workspace dependency, then Vite resolves its published `exports` map. The generated app therefore contains the same `dist/` SDK implementation that an installed consumer receives.
@@ -17,7 +17,7 @@ Import the repository from GitHub with these settings:
 - **Framework Preset:** Vite
 - **Root Directory:** `./` (the repository root)
 
-The repository-level [`vercel.json`](../../vercel.json) runs `yarn build` and publishes `packages/demo-app/out`. Keeping the repository root lets Vercel build the `naviquest` workspace dependency without an outside-root exception. The generated deployment includes all five HTML routes, files from `public/`, assets, the Naviquest SDK, and its worker.
+The repository-level [`vercel.json`](../../vercel.json) runs `yarn build` and publishes repository-root `out`. Keeping the repository root lets Vercel build the `naviquest` workspace dependency without an outside-root exception. The generated deployment includes all five HTML routes, files from `public/`, assets, the Naviquest SDK, and its worker.
 
 Query flags:
 

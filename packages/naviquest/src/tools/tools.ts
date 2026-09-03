@@ -2059,7 +2059,7 @@ export function createTools(d: ToolDeps) {
         revealedBy: discloserFor(collapsed[0]),
         note: 'Part of this region is behind a closed disclosure. The text is included, but nothing inside it can be activated until that control is opened.',
       } : {}) };
-    return budget('read_region', out, (o) => {
+    return budget('resolve_address', out, (o) => {
       const controlsCost = est(o.controls ?? []);
       const textCost = est(o.text ?? '');
       if ((o.controls?.length ?? 0) > 1 && controlsCost >= textCost) {

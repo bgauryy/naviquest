@@ -205,6 +205,7 @@ describe('every tool survives the wire', () => {
     expect(payload.error).toBeUndefined();
   });
 
+
   it('declares and validates frame address identity over the wire', async () => {
     const { createNaviquest } = await import('../src/index.ts');
     const api = await createNaviquest({});

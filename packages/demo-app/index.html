@@ -36,7 +36,7 @@
     <ol>
       <li>Discover same-origin destinations, then build a site graph: <em>source page → destination page → link or control purpose</em>. Visit each distinct application page needed to complete that graph.</li>
       <li>On each visited page, identify its purpose, main sections, visible forms and important actions, and next useful navigation choices. Prefer structured results and addresses; read detailed regions only when labels and structure cannot answer the question.</li>
-      <li>When a response has <code>pagination.complete: false</code>, follow every relevant <code>pagination.next</code> entry before declaring that scope complete. State unvisited, incomplete, private, excluded, or inaccessible scope.</li>
+      <li>When a response has <code>pagination.complete: false</code>, follow <code>pagination.next</code> only when the omitted page is needed for the site graph, a requested journey, or an unresolved gap. Otherwise label that inventory partial; never call it complete. State unvisited, incomplete, private, excluded, or inaccessible scope.</li>
       <li>Do not infer eligibility, submit a form, or expose anything in a private region.</li>
     </ol>
     <p><strong>Return exactly:</strong> <em>SITE GRAPH</em>; <em>PAGE MAP</em> (purpose; sections; inputs/actions; next choices); <em>USER JOURNEYS</em> (renew parking, book a library PC, receive local alerts, manage a CityDesk task); and <em>COVERAGE</em> (visited/discovered pages and gaps).</p>

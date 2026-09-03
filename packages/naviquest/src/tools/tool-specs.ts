@@ -1,12 +1,12 @@
 import type { ToolSpecName } from './tool-names.ts';
 
 export const ORIENTATION_SECTIONS = ['reachableViews', 'outline', 'landmarks', 'currentTrail'] as const;
-export const QS_FIELDS = ['tag', 'role', 'name', 'text', 'state', 'box', 'address', 'attributes', 'scope', 'frame'] as const;
+export const QS_FIELDS = ['tag', 'role', 'name', 'text', 'state', 'box', 'address', 'selector', 'parent', 'attributes', 'scope', 'frame'] as const;
 export const QUERY_VIEWS = ['actions', 'structure', 'scopes', 'forms'] as const;
 
 const ADDRESS_INPUT = {
   type: 'object',
-  description: 'Copy; never edit.',
+  description: 'Copy unchanged from a Naviquest result.',
   properties: {
     frame: { type: 'string', minLength: 1 },
     landmark: { type: ['string', 'null'] },
@@ -33,7 +33,7 @@ const ADDRESS_INPUT = {
 const PAGE_LIMIT = { type: 'integer', minimum: 1 };
 const PAGE_OFFSET = { type: 'integer', minimum: 0, default: 0 };
 const NUMERIC_REVISION = { type: 'integer', minimum: 0 };
-const SUMMARIZE = { type: 'boolean', description: 'Slow, lossy; less text; short skips' };
+const SUMMARIZE = { type: 'boolean', description: 'Optional lossy summary; slower; short text may stay unchanged.' };
 /** Every tool takes it: the agent's one-line intent for THIS call. Optional, and
  *  never indexed — the page may surface it so the human sees why the agent looked. */
 const REASON = { type: 'string', minLength: 1, pattern: '^[^\\r\\n]+$', description: 'One-line intent; the host may display it.' };
@@ -49,11 +49,11 @@ const NON_EMPTY_STRING_OR_LIST = {
 export const TOOL_SPECS = [
   {
     name: 'describe_app', title: 'Orient on page',
-    description: 'Use when the page is unfamiliar or its current scope is uncertain. Returns a compact map of sections, views, vocabulary, and coverage. Next: choose a content search, a control lookup, or cross-page discovery from the gap; do not page headings solely to enumerate them. After an action, use `_observation` as `changesSince`.',
+    description: 'Orient to an unfamiliar page or changed state. Returns identity, structure, views, vocabulary, modality, and coverage gaps. Use `_observation` with `changesSince` when an interaction outcome matters.',
     inputSchema: { type: 'object', properties: {
       opaque: { type: 'boolean', description: 'Boxes of elements the text index cannot read (canvas, unlabeled images), not the orientation.' },
       describe: { type: 'boolean', description: 'With `opaque:true`, read each canvas/image region with an on-device model (`description`). Slow — use a small `limit`. Fail-open where no model exists.' },
-      section: { type: 'string', enum: [...ORIENTATION_SECTIONS] },
+      section: { type: 'string', enum: [...ORIENTATION_SECTIONS], description: 'Return one paged orientation section.' },
       limit: { ...PAGE_LIMIT, default: 10 }, offset: PAGE_OFFSET, revision: NUMERIC_REVISION,
       since: { type: 'string', description: 'Prior `_etag`.' },
       changesSince: { type: 'string', description: 'Prior `_observation` after an action. Emits `announce` (live-region text the page stated) and `errorText` (a field\'s own validation message) so you read the outcome, not just that state changed.' },
@@ -63,10 +63,10 @@ export const TOOL_SPECS = [
   },
   {
     name: 'find_on_page', title: 'Search page',
-    description: 'Use for a fact, explanation, or passage on this page; not for a control or exhaustive inventory. Returns ranked evidence and an optional answer. Expand an excerpt only when it leaves a material gap. For a job use locate_control; for another page use agentic_content.',
+    description: 'Retrieve page-authored evidence for a question, topic, or passage. Returns ranked excerpts and addresses. Use `locate_control` for actions and `agentic_content` for other pages or resources.',
     inputSchema: { type: 'object', properties: {
-      query: { type: 'string', minLength: 1, description: 'Content, not a control.' },
-      goal: { type: 'string', minLength: 1, description: '`read` default; `navigate` requests an action.' },
+      query: { type: 'string', minLength: 1, description: 'Natural-language question, topic, or passage.' },
+      goal: { type: 'string', minLength: 1, default: 'read', description: 'Open task context; `navigate` adds action-oriented recovery.' },
       limit: { ...PAGE_LIMIT, default: 5 }, offset: PAGE_OFFSET, revision: NUMERIC_REVISION,
       since: { type: 'string', description: 'Prior `_etag`.' },
       summarize: SUMMARIZE,
@@ -75,9 +75,9 @@ export const TOOL_SPECS = [
   },
   {
     name: 'locate_control', title: 'Find a control',
-    description: 'Use for a specific user job, not a label guess or a page-wide inventory. Returns ranked live controls/links and refinements when intent is ambiguous. Resolve the chosen address immediately before the host acts. Page only while the job remains unresolved.',
+    description: 'Match an open-ended user intent to current controls or links. Returns ranked candidates, confidence, refinements, and addresses; optional filters narrow the search.',
     inputSchema: { type: 'object', properties: {
-      description: { type: 'string', minLength: 1, description: 'Control job, not guessed label.' },
+      description: { type: 'string', minLength: 1, description: 'What the user wants to accomplish.' },
       limit: { ...PAGE_LIMIT, default: 4 }, offset: PAGE_OFFSET, revision: NUMERIC_REVISION,
       role: { ...NON_EMPTY_STRING_OR_LIST, description: 'ARIA-role filter.' },
       affordance: { ...NON_EMPTY_STRING_OR_LIST, description: 'Open-vocabulary job filter.' },
@@ -87,10 +87,10 @@ export const TOOL_SPECS = [
   },
   {
     name: 'resolve_address', title: 'Resolve address', readOnlyHint: false,
-    description: 'Use with an address already returned by another tool: ground a control before an action, or expand a region when its excerpt is insufficient. Returns fresh state, navigation, box, and readable region evidence. Never reuse a box; follow a next page only if omitted text or controls affect the decision.',
+    description: 'Revalidate an address from any Naviquest tool. Controls return live state and geometry; regions can return wider text and nearby controls with `expand:true`.',
     inputSchema: { type: 'object', properties: {
       address: ADDRESS_INPUT,
-      scrollIntoView: { type: 'boolean', description: 'Move before measuring.' },
+      scrollIntoView: { type: 'boolean', description: 'Scroll before measuring viewport-relative geometry.' },
       expand: { type: 'boolean', description: 'Read more of a region: paginate its full text (`textOffset`) and include its controls.' },
       summarize: SUMMARIZE,
       reason: REASON,
@@ -98,18 +98,18 @@ export const TOOL_SPECS = [
   },
   {
     name: 'query_selector', title: 'List or inspect by semantics/CSS',
-    description: 'Use for known CSS or an inventory the user explicitly needs; not as a default orientation step. `actions` and `forms` can be large, so one job should use locate_control. Returns bounded matching rows. Request only fields needed; page only when omitted rows could change the answer.',
+    description: 'Inspect known CSS or browse an explicit semantic inventory. Results cross readable frames and shadow roots; exact rows can be refetched with different fields.',
     inputSchema: { type: 'object', properties: {
-      view: { type: 'string', enum: [...QUERY_VIEWS] },
-      selector: { type: 'string', minLength: 1, description: 'Known CSS.' },
+      view: { type: 'string', enum: [...QUERY_VIEWS], description: 'Document-order semantic inventory.' },
+      selector: { type: 'string', minLength: 1, description: 'CSS evaluated across readable query scopes.' },
       limit: { ...PAGE_LIMIT, default: 10 }, offset: PAGE_OFFSET,
-      revision: { type: ['integer', 'string'], minimum: 0, minLength: 1, description: 'Copy from a cursor.' },
+      revision: { type: ['integer', 'string'], minimum: 0, minLength: 1, description: 'Copy from a continuation or exact-search result.' },
       role: NON_EMPTY_STRING_OR_LIST, affordance: NON_EMPTY_STRING_OR_LIST,
       landmark: { type: 'string', minLength: 1 },
       name: { type: 'string', minLength: 1, description: 'Copied exact accessible name; actions only.' },
       heading: { type: 'string', minLength: 1, description: 'Copied exact heading; structure only.' },
-      frames: { type: 'boolean', description: 'Follow readable frames; default true.' },
-      fields: { type: ['array', 'null'], uniqueItems: true, description: 'Return only evidence needed for the next decision: usually name and address; add state, text, or box only when they matter.', items: { type: 'string', enum: [...QS_FIELDS] } },
+      frames: { type: 'boolean', default: true, description: 'Follow readable frames.' },
+      fields: { type: ['array', 'null'], uniqueItems: true, description: 'Fields useful for this inspection; text, state, box, and context are opt-in.', items: { type: 'string', enum: [...QS_FIELDS] } },
       reason: REASON,
     }, oneOf: [
       { required: ['view'], not: { required: ['selector'] } },
@@ -118,12 +118,12 @@ export const TOOL_SPECS = [
   },
   {
     name: 'agentic_content', title: 'Agent resources',
-    description: 'Use for same-origin resources or a cross-page graph; not for facts already on this page. `list`/`find` returns bounded live links and resource handles. Navigate only destinations relevant to the user’s goal, retain source/destination/purpose, and report unvisited or truncated scope.',
+    description: 'Discover same-origin pages and published resources beyond the current document. `list` browses, `find` ranks, and `read` opens a returned resource.',
     inputSchema: { type: 'object', properties: {
-      intent: { type: 'string', enum: ['list', 'read', 'find'] },
-      query: { type: 'string' },
-      url: { type: 'string' },
-      goal: { type: 'string', minLength: 1, description: '`navigate` verifies a live HTML URL when available.' },
+      intent: { type: 'string', enum: ['list', 'read', 'find'], default: 'list', description: '`list` browses, `find` ranks by query, and `read` opens a returned URL.' },
+      query: { type: 'string', description: 'Natural-language terms for `find`.' },
+      url: { type: 'string', description: 'Exact resource URL returned by `list` or `find`.' },
+      goal: { type: 'string', minLength: 1, default: 'read', description: 'Open task context; `navigate` asks `find` to verify live HTML when possible.' },
       limit: { ...PAGE_LIMIT, default: 20 }, offset: PAGE_OFFSET,
       revision: { type: 'string', minLength: 1, description: 'Copy from a cursor.' },
       summarize: SUMMARIZE,

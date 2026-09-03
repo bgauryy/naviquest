@@ -1,0 +1,26 @@
+[
+  {
+    "site": "CityDesk home",
+    "url": "https://naviquest.vercel.app/",
+    "read": "What is Naviquest, and what benefit does this demo claim it gives agents researching large websites?",
+    "crawl": "Starting from the CityDesk home page, find the parking permits page and report which controlled parking zone has the lowest first-vehicle annual price and what that price is."
+  },
+  {
+    "site": "CityDesk parking",
+    "url": "https://naviquest.vercel.app/parking.html",
+    "read": "What happens to Zone C permit holders during the Quay Street parking-bay suspension on 8–10 September 2026?",
+    "crawl": "Starting from the parking permits page, find the city notices page and report what is proposed at 22 Harbour Lane and the deadline for neighbour comments."
+  },
+  {
+    "site": "CityDesk libraries",
+    "url": "https://naviquest.vercel.app/libraries.html",
+    "read": "What disruption affects Riverside Library on Sunday 6 September 2026, and where can holds be collected that day?",
+    "crawl": "Starting from the libraries page, find the CityDesk home page and state who qualifies for the home energy rebate and which three improvements it covers."
+  },
+  {
+    "site": "CityDesk notices",
+    "url": "https://naviquest.vercel.app/notices.html",
+    "read": "When someone comments on a planning application, what does CityDesk say will be public?",
+    "crawl": "Starting from the city notices page, find the libraries page and compare the daily public-computer allowance for members with the guest-session allowance for non-members."
+  }
+]

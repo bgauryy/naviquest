@@ -364,14 +364,27 @@ export interface QuerySelectorInput {
   reason?: string;
 }
 
-export interface QuerySelectorSuccess extends ToolSuccessEnvelope {
-  view?: QuerySelectorView;
-  selector?: string;
+interface QuerySelectorBaseSuccess extends ToolSuccessEnvelope {
   matched?: number;
   returned: number;
   truncated: number;
+  offset?: number;
+  revision?: number | string;
   results: Array<Record<string, unknown> & { address?: Address | null }>;
 }
+export interface QuerySelectorExactSuccess extends QuerySelectorBaseSuccess {
+  view?: never;
+  selector: string;
+  matched: number;
+  offset: number;
+  revision: string;
+  results: Array<Record<string, unknown> & { index: number; address?: Address | null }>;
+}
+export interface QuerySelectorViewSuccess extends QuerySelectorBaseSuccess {
+  view: QuerySelectorView;
+  selector?: never;
+}
+export type QuerySelectorSuccess = QuerySelectorExactSuccess | QuerySelectorViewSuccess;
 export type QuerySelectorResult = QuerySelectorSuccess | ToolFailure;
 
 export interface AgenticContentInput {

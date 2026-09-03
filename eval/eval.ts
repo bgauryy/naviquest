@@ -344,6 +344,11 @@ async function laneContracts(browser: Browser) {
     await page.addScriptTag({ content: BUNDLE });
     const result = await page.evaluate(async () => {
       const WQ: any = (window as any).WQ;
+      const shadowHost = document.createElement('div');
+      shadowHost.id = 'selector-shadow-host';
+      shadowHost.attachShadow({ mode: 'open' }).innerHTML =
+        '<article><p class="shadow-probe">Shadow search fetch sentinel.</p></article>';
+      document.querySelector('main')!.appendChild(shadowHost);
       const wq: any = WQ.createNaviquest({ exclude: ['[data-private]'],
         tuning: { adaptiveBudget: { enabled: false }, budgets: { describe_app: 900 } } });
 
@@ -487,6 +492,35 @@ async function laneContracts(browser: Browser) {
       const styledSearch = await wq.tools.find_on_page({ query: 'Permit refund policy', limit: 5 });
       const captionExact = await wq.tools.query_selector({ selector: '#mdn-caption', fields: ['text'], limit: 2 });
       const bigSelectorText = await wq.tools.query_selector({ selector: '#big-prose', fields: ['text', 'address'], limit: 2 });
+      const legacySelectorSearch = await wq.tools.query_selector({ selector: '#mdn-prose, #big-prose', fields: ['tag', 'selector', 'address'], limit: 2 });
+      const legacySelectedBigRow = legacySelectorSearch.results?.find((row: any) => row.selector === '#big-prose');
+      const legacySelectorFetched = legacySelectedBigRow?.selector
+        ? await wq.tools.query_selector({ selector: legacySelectedBigRow.selector, fields: ['text'], limit: 1 })
+        : null;
+      const bigSelectorSearch = await wq.tools.query_selector({ selector: '#mdn-prose, #big-prose', fields: ['tag', 'address'], limit: 2 });
+      const selectedBigRow = bigSelectorSearch.results?.find((row: any) => row.index === 1);
+      const bigSelectorFetched = Number.isInteger(selectedBigRow?.index)
+        ? await wq.tools.query_selector({
+            selector: bigSelectorSearch.selector,
+            revision: bigSelectorSearch.revision,
+            offset: selectedBigRow.index,
+            fields: ['text'],
+            limit: 1,
+          })
+        : null;
+      const bigSelectorRegion = selectedBigRow?.address
+        ? await wq.tools.resolve_address({ address: selectedBigRow.address, expand: true })
+        : null;
+      const shadowSelectorSearch = await wq.tools.query_selector({ selector: '.shadow-probe', fields: ['tag', 'scope'], limit: 2 });
+      const shadowSelectorFetched = Number.isInteger(shadowSelectorSearch.results?.[0]?.index)
+        ? await wq.tools.query_selector({
+            selector: shadowSelectorSearch.selector,
+            revision: shadowSelectorSearch.revision,
+            offset: shadowSelectorSearch.results[0].index,
+            fields: ['text', 'parent', 'scope'],
+            limit: 1,
+          })
+        : null;
       const unindexedMatch = await wq.tools.query_selector({ selector: 'title', fields: ['tag', 'address'], limit: 2 });
       const outline = await wq.tools.describe_app({ section: 'outline', limit: 20 });
       const parentOutline = outline.results?.find((x: any) => x.text === 'Parent only');
@@ -625,7 +659,7 @@ async function laneContracts(browser: Browser) {
       return { located, searchButton, firstResolved, secondResolved, docs, docsNavigate, fallback, fallbackRead, unknownRead,
         baseline, changes, unchanged,
         malformed, mixed, rerender, cappedChanges, expired, manualChanges, crossInstance,
-        malformedCap, malformedExpiry, regionChange, outcomeChange, settleBusy, settleQuiet, formsView, formsStale, invalidExclude, evidenceOnly, parentSearch, phrasingSearch, methodSearch, phrasingExact, payButton, styledSearch, captionExact, bigSelectorText, unindexedMatch, outline, parentOutline, parentRead, parentNext, parentResumed,
+        malformedCap, malformedExpiry, regionChange, outcomeChange, settleBusy, settleQuiet, formsView, formsStale, invalidExclude, evidenceOnly, parentSearch, phrasingSearch, methodSearch, phrasingExact, payButton, styledSearch, captionExact, bigSelectorText, legacySelectorSearch, legacySelectorFetched, bigSelectorSearch, selectedBigRow, bigSelectorFetched, bigSelectorRegion, shadowSelectorSearch, shadowSelectorFetched, unindexedMatch, outline, parentOutline, parentRead, parentNext, parentResumed,
         exactAction, exactHeading, freshControl, freshFallback, staleRegion,
         intents, badReasonType, badReasonLines, badJson, summarizedReason,
         failedRegistration, namesAfterFailure, retryA, retryB, retryCalls, namesAfterRetry, namesAfterDispose,
@@ -895,6 +929,29 @@ async function laneContracts(browser: Browser) {
         excerpt: bigRow?.textIsExcerpt, readFullTextWith: bigRow?.readFullTextWith,
         tokens: result.bigSelectorText?._tokens, budget: result.bigSelectorText?._budget,
         over: result.bigSelectorText?._overBudget });
+    check('selector search result can fetch its exact element text',
+      result.selectedBigRow?.tag === 'p'
+        && result.selectedBigRow?.index === 1
+        && result.bigSelectorFetched?.results?.[0]?.index === 1
+        && String(result.bigSelectorFetched?.results?.[0]?.text ?? '').includes('Refund clause sentence carrying budget pressure.'),
+      { search: result.selectedBigRow, fetched: result.bigSelectorFetched });
+    const compactSelectorTokens = (result.bigSelectorSearch?._tokens ?? 0) + (result.bigSelectorFetched?._tokens ?? 0);
+    const legacySelectorTokens = (result.legacySelectorSearch?._tokens ?? 0) + (result.legacySelectorFetched?._tokens ?? 0);
+    console.log(`       selector search→fetch payload: ${legacySelectorTokens} → ${compactSelectorTokens} tok`);
+    check('index fetch costs fewer payload tokens than generated-selector fetch',
+      compactSelectorTokens > 0 && compactSelectorTokens < legacySelectorTokens,
+      { legacySelectorTokens, compactSelectorTokens });
+    check('selector search address can fetch the matching semantic region',
+      !!result.selectedBigRow?.address
+        && result.bigSelectorRegion?.status === 'RESOLVED'
+        && result.bigSelectorRegion?.kind === 'region'
+        && String(result.bigSelectorRegion?.text ?? '').includes('Refund clause sentence carrying budget pressure.'),
+      { search: result.selectedBigRow, fetched: result.bigSelectorRegion });
+    check('selector index fetch addresses an exact shadow-root result',
+      String(result.shadowSelectorSearch?.results?.[0]?.scope ?? '').includes('/shadow[')
+        && String(result.shadowSelectorFetched?.results?.[0]?.text ?? '').includes('Shadow search fetch sentinel.')
+        && result.shadowSelectorFetched?.results?.[0]?.parent?.tag === 'article',
+      { search: result.shadowSelectorSearch, fetched: result.shadowSelectorFetched });
     const unindexed = result.unindexedMatch?.results?.[0];
     check('an unaddressable match carries the selector its note tells the agent to use',
       unindexed?.address === null && !!unindexed?.addressNote
@@ -1064,6 +1121,17 @@ async function laneFrames(browser: Browser) {
       const on = await WQ.createNaviquest({ tuning: { answer: { verify: 'off', fromRegion: 'off' }, discovery: { frames: true } } });
       const da = await on.tools.describe_app({});
       const fOn = await on.tools.find_on_page({ query: q });
+      const selectorSearch = await on.tools.query_selector({ selector: 'p', fields: ['tag', 'frame'], limit: 10 });
+      const selectorFrameRow = selectorSearch.results?.find((row: any) => row.frame === 'workspace');
+      const selectorFetch = Number.isInteger(selectorFrameRow?.index)
+        ? await on.tools.query_selector({
+            selector: selectorSearch.selector,
+            revision: selectorSearch.revision,
+            offset: selectorFrameRow.index,
+            limit: 1,
+            fields: ['text', 'parent', 'frame'],
+          })
+        : null;
       const top = (fOn.results ?? []).find((x: any) => /platypus/i.test(x.text ?? ''));
       let region = '';
       if (top?.address) {
@@ -1091,6 +1159,9 @@ async function laneFrames(browser: Browser) {
         staysInFrame: !/overview page/i.test(region),
         mutationFresh: (afterNew.results ?? []).some((x: any) => /orange capybara/i.test(x.text ?? '')),
         staleTextGone: !(afterOld.results ?? []).some((x: any) => /purple platypus/i.test(x.text ?? '')),
+        selectorSearch,
+        selectorFrameRow,
+        selectorFetch,
       };
     });
     check('frames off: framed content is NOT indexed', r.offFound === false, r);
@@ -1099,6 +1170,15 @@ async function laneFrames(browser: Browser) {
     check('frames on: the result address carries a frame path', typeof r.addressFrame === 'string' && r.addressFrame.startsWith('document/frame'), r);
     check('frames on: the frame address round-trips (read the frame text)', r.roundTrip === true, r);
     check('frames on: read_region does not cross into the same-heading shell', r.staysInFrame === true, r);
+    check('exact selector search can fetch one chosen frame result with different fields',
+      Number.isInteger(r.selectorFrameRow?.index)
+        && String(r.selectorFetch?.results?.[0]?.text ?? '').includes('purple platypus ledger')
+        && r.selectorFetch?.results?.[0]?.frame === 'workspace',
+      { search: r.selectorSearch, fetched: r.selectorFetch });
+    check('exact selector parent context is bounded structural metadata',
+      r.selectorFetch?.results?.[0]?.parent?.tag === 'main'
+        && !('text' in (r.selectorFetch?.results?.[0]?.parent ?? {})),
+      r.selectorFetch?.results?.[0]?.parent);
     check('frames on: in-frame mutations rebuild the semantic index',
       r.mutationFresh === true && r.staleTextGone === true, r);
     check('frames on: frame coverage and opaque regions are merged',

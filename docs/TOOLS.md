@@ -16,14 +16,22 @@ Every input can include a non-empty one-line `reason`. If the host configures `c
 
 ---
 
-## The loop
+## Choose an entry point
+
+Start with the narrowest surface that matches what the agent already knows. Naviquest does not require an orientation call before every task:
+
+- Use `describe_app` when the page or current scope is unfamiliar.
+- Use `find_on_page` for a question, topic, or passage on the current page.
+- Use `locate_control` for an open-ended user job.
+- Use `query_selector` for known CSS or an explicit semantic inventory.
+- Use `agentic_content` when the evidence might be on another page or in a published resource.
+- Use `resolve_address` to expand or revalidate an address returned by any tool.
+
+These tools can form a continuous interaction loop, but callers can skip stages that do not apply to the task:
 
 ```
         ┌──────────────────────────────────────────────────┐
         │                                                  │
-        ▼                                                  │
-   agentic_content(list)   "Am I even on the right page?"    │
-        │                   (site level; skip if you are)     │
         ▼                                                  │
    describe_app()          "Where am I? What is here?"      │
         │                                                  │
@@ -43,7 +51,7 @@ Every input can include a non-empty one-line `reason`. If the host configures `c
                  semantic outcome of the action
 ```
 
-Two modes off that loop, plus one escape hatch:
+Focused modes provide more detail without forcing the entire loop:
 
 - **`resolve_address({ address, expand: true })`**; a `find_on_page` passage was the right region but too short. Region addresses take this path automatically; `expand` forces it for a control address.
 - **`describe_app({ opaque: true })`**; the answer is in a chart or image the text index cannot read. Get boxes to screenshot.
@@ -53,7 +61,7 @@ Two modes off that loop, plus one escape hatch:
 
 ## Why six, and why these six
 
-Four core page operations form an orient → retrieve → ground → verify loop; `query_selector` exposes bounded semantic inventories or prior CSS knowledge; `agentic_content` adds site scope.
+Four core page operations can form an orient → retrieve → ground → verify loop. `query_selector` exposes bounded semantic inventories or prior CSS knowledge. `agentic_content` adds site scope. Callers can enter at any stage supported by their existing context.
 
 | Tool | Why the agent needs it | Why another tool cannot replace it |
 |---|---|---|
@@ -69,13 +77,15 @@ Keeping these separate prevents one generic search tool from mixing page scope w
 | Survey or inventory; many things, bounded | Expand; one thing, in full |
 |---|---|
 | `find_on_page`; which regions talk about X | `resolve_address` (region path); all of that region, siblings merged |
-| `locate_control`; which controls might do X | `resolve_address`; can I act on *this* one, right now |
+| `locate_control`; which controls might do X | `resolve_address`; can I act on *this* one at action time |
 | `describe_app().nonText`; how many holes exist | `describe_app({ opaque: true })`; where they are, with boxes |
 | `agentic_content` `list`/`find`; which PAGE of this site | `agentic_content` `read`; that document's text |
-| `query_selector` semantic views; document-order actions/regions | *(follow `pagination.next`; no expansion semantics)* |
+| `query_selector` semantic views; document-order actions/regions | Follow `pagination.next` for more rows; resolve a structure address for its region |
 | `describe_app`; the whole page, structurally | *(it is the top of the tree)* |
 
 Every surface is bounded. If a response omits a list suffix, it returns a revision-bound `pagination.next` call recovering the first omitted row. NL survey tools are ranked; semantic inventories and manifest lists preserve document/author order. Expansion consumes an address for page regions and controls; `agentic_content({ intent: "read" })` consumes a URL the same tool previously vouched for; distinct authorities.
+
+The survey-to-expand transitions in this table are semantic zoom: page → area → result → live element or full region. Naviquest does not change browser magnification. It accounts for the visual viewport when reporting visibility. Frame boxes include coordinate-space provenance; the browser host owns zoom, screenshots, and pixel actions.
 
 **None of the six is redundant.** The `resolve_address` region path is not `find_on_page` with a bigger limit; it merges sibling chunks under one heading path, giving *the section* rather than the chunk that ranked. `resolve_address` is not `locate_control` again; locate ranks by description, resolve re-verifies one address against the live DOM. `describe_app` opaque mode is ~10× the cost of its counts, so it is opt-in. `agentic_content` answers about pages the agent is *not* on, which indexing the current DOM cannot reach.
 
@@ -99,7 +109,7 @@ The same principle runs through the response shapes: `retrieval` names the lane 
 
 ## 1. `describe_app({ since?, changesSince?, section?, opaque?, describe?, limit?, offset?, revision?, summarize? })`
 
-**Call this first.** Bounded by page *structure*, not *length*, so it stays cheap at any size.
+Use this tool when the page or current scope is unfamiliar. If the question, control intent, selector, or resource is already known, call the corresponding focused tool directly. Page *structure*, not page *length*, bounds the response size.
 
 | Field | What it tells the agent |
 |---|---|
@@ -193,7 +203,7 @@ Ranked content regions, each carrying the controls that belong to it.
 ```
 
 - **`kind` prevents section blindness.** Outline headings participate in the same lexical corpus as passages; a `section` result is addressable and resolvable directly, not a post-ranking guess. Parent headings stay discoverable even when matching words aren't repeated in child prose.
-- **Decision fields are machine-routable.** `status`, `recommendedAddress`, `confidenceBasis`, and `nextCalls` let a client continue from evidence without reading prose or grader labels. `goal: "navigate"` adds a `locate_control` next call. `goal` is an open string so the SDK doesn't freeze every agent's vocabulary.
+- **Decision fields are machine-routable.** `status`, `recommendedAddress`, `confidenceBasis`, and `nextCalls` let a client continue from evidence without reading prose or grader labels. `goal` defaults to `"read"`; `"navigate"` adds a `locate_control` next call. The field remains an open string so the SDK doesn't freeze every agent's vocabulary.
 - **`answerStatus` fails closed.** `supported` = `answer` cleared the gate. `unsupported` = related passages found but none supports an answer (evidence only; `hint` + `next` route to the addressable outline). `no-match` = no passage found. Never treat an absent `answer` as permission to report rank 1.
 - **`answer.verified` and `answer.unverified` are not opposites.** `verified: true` means an on-device model was asked whether the sentence answers the question and said yes. `unverified: "NO_ON_DEVICE_READER"` means the check never ran (no Prompt API, model not downloaded, no user gesture, cold session); so the answer is lexical extraction only. Both absent is not a third state: exactly one appears whenever `answer.source` is `passage`. A rejected sentence never reaches the caller, so there is no `verified: false`. `confidence` already reads `low` in the unverified case.
 - **`answer` is one answer, not one per result.** A single clearly-sourced, addressable answer costs ~100 tokens; a span per result would fight the budget. When nothing clears the floor the field is absent and the preceding status explains why. `queryCoverage` reports informative-term occurrence in the top passage and heading path; not a correctness probability.
@@ -392,14 +402,16 @@ query_selector({ view: 'forms', limit: 10 })
 
 Semantic views return `matched`, `returned`, `truncated`, projection `coverage`, and a copyable `pagination.next`. Structure coalesces chunks that resolve to the same region, so every row has a distinct re-readable address. Next-call arguments include the projection `revision`; after a re-render the tool returns `STALE_CURSOR` rather than shifting an offset onto different elements. They preserve page size and every filter.
 
-Exact mode reports `documentsSearched`, `shadowTreesSearched`, registered-root coverage, and a `scope` path on every default result. Standard CSS has no shadow-piercing combinator, so a resolved shadow control returns no document selector; its address, box, and page-side `resolve(address)` remain valid. Boxes from the top document declare `boxSpace: "top-level-viewport"`; boxes inside a readable frame declare `boxSpace: "scope-viewport"` (the owning frame document's viewport, not a guessed top-page translation). Use a frame-scoped browser companion for pixel actions; do not sum nested frame offsets from this payload. Exact-mode next calls retain a bounded snapshot of the complete ordered scope/element identities (the selector can reach outside the observed projection and into frames). Every identity is compared exactly: a changed population returns `STALE_CURSOR`, an evicted abandoned cursor returns `CURSOR_EXPIRED`. Both fail closed.
+Exact mode reports `documentsSearched`, `shadowTreesSearched`, and registered-root coverage; request `scope` for each row's traversal path. Standard CSS has no shadow-piercing combinator, so a resolved shadow control returns no document selector; its address, box, and page-side `resolve(address)` remain valid. Boxes from the top document declare `boxSpace: "top-level-viewport"`; boxes inside a readable frame declare `boxSpace: "scope-viewport"` (the owning frame document's viewport, not a guessed top-page translation). Use a frame-scoped browser companion for pixel actions; do not sum nested frame offsets from this payload. Exact-mode next calls retain a bounded snapshot of the complete ordered scope/element identities (the selector can reach outside the observed projection and into frames). Every identity is compared exactly: a changed population returns `STALE_CURSOR`, an evicted abandoned cursor returns `CURSOR_EXPIRED`. Both fail closed.
 
 Live action state is re-read at answer time. Beyond ARIA state it reports native `required`, `readOnly`, focus, validity, and `valuePresent`. The last is deliberately boolean: it lets an agent continue a form without exposing a password or resident-entered value through a read-only sensor.
 
 ### Exact CSS mode
 
 ```js
-query_selector({ selector: 'form input[required]', limit: 5 })
+const hits = await query_selector({ selector: 'main section', fields: ['tag', 'parent', 'frame'], limit: 5 })
+await query_selector({ selector: hits.selector, revision: hits.revision,
+  offset: hits.results[0].index, limit: 1, fields: ['text', 'attributes'] })
 query_selector({ selector: '#claim-address', fields: ['address', 'box'] })
 query_selector({ selector: 'input' }) // readable nested frames are included
 query_selector({ selector: 'input', frames: false }) // current document/shadows only
@@ -411,13 +423,19 @@ query_selector({ selector: 'input', frames: false }) // current document/shadows
   "matched": 3, "returned": 3,
   "results": [{
     "tag": "input", "role": "checkbox", "name": "Proof of ownership",
-    "state": { "checked": false, "disabled": false }, "scope": "document",
+    "index": 0,
     "address": { /* re-queryable; act through this, not the selector */ }
   }]
 }
 ```
 
-`fields` defaults to `tag, role, name, state, address, scope`. **`text` is opt-in**, each row's text capped at **1200 characters** (`retrieval.selectorTextChars`). Rows are this tool's only pagination unit and its shrinker floors at one row, so an uncapped row could not be shrunk: a large element returned the whole thing and merely flagged `_overBudget`; measured at 9,799 chars / 2,611 tokens against the 1,200-token ceiling. A clipped row declares itself and names the tool that owns paginated full text:
+`fields` defaults to `tag, role, name, address, frame`. Every row also carries its absolute `index`. The exact short-lived fetch handle is the response's `selector` + `revision` + that row index; copying those into a second call with `limit: 1` lets the agent request different fields without repeating the full result set. It works across the top document, readable frames, and shadow roots. Fetch immediately: population changes or cursor eviction return an explicit stale/expired error.
+
+TypeScript consumers can use `QuerySelectorExactSuccess` for the required `selector`, string `revision`, and indexed rows. `QuerySelectorViewSuccess` represents semantic views, and `QuerySelectorSuccess` is their union.
+
+`parent` is opt-in bounded flat-tree context (`tag` and `role` only), not a nested DOM dump. `frame` remains separate provenance because an iframe boundary is not ordinary element ancestry. `selector` is also opt-in and may be `null` for frame or shadow-tree elements. Prefer the semantic `address` for a region read or action because it survives rerenders better.
+
+**`text` is opt-in**, each row's text capped at **1200 characters** (`retrieval.selectorTextChars`). Rows are this tool's only pagination unit and its shrinker floors at one row, so an uncapped row could not be shrunk: a large element returned the whole thing and merely flagged `_overBudget`; measured at 9,799 chars / 2,611 tokens against the 1,200-token ceiling. A clipped row declares itself and names the tool that owns paginated full text:
 
 ```jsonc
 { "text": "Refund clause sentence…", "textChars": 9799, "textIsExcerpt": true,
@@ -441,7 +459,7 @@ Matches inside an `exclude` selector, `[data-naviquest-ignore]`, or `aria-hidden
 
 ### `fields`; pay only for what you will read
 
-Any subset of `tag`, `role`, `name`, `text`, `state`, `box`, `address`, `attributes`, `scope`, `frame`. Default `tag, role, name, state, address, scope` omits text because an exact selector can match an element with arbitrarily large descendants. If you request `text`, the tool returns the complete redacted value and can set `_overBudget` for one indivisible row; it never clips that field. Ask for `["address"]` alone when you only need something to act on. An all-invalid `fields` is rejected, not silently ignored.
+Any subset of `tag`, `role`, `name`, `text`, `state`, `box`, `address`, `selector`, `parent`, `attributes`, `scope`, `frame`. Default `tag, role, name, address, frame` omits text and volatile state because discovery should return handles, not ingest descendants. `text` is capped and declares truncation; use an address with `resolve_address` for paginated full region text. Ask for `["address"]` alone when you only need something to act on. An all-invalid `fields` is rejected, not silently ignored.
 
 ### `frames`; recursively readable by default, and the response says so
 
@@ -452,7 +470,7 @@ Measured across five large sites, 36 iframes: **18 same-origin reachable, 18 cro
 ### Other behaviours
 
 - A selector that doesn't parse returns `{ error: "INVALID_INPUT" }` with the parser's own message. `querySelectorAll` throws `SyntaxError`, and nothing validates a tool call.
-- `matched` is the true total even when `limit` cuts the page. Call `pagination.next` to recover the remainder.
+- `matched` is the true total even when `limit` cuts the page. Call `pagination.next` to recover the remainder; copy a row's absolute `index` with the response `selector` and `revision` to fetch only that row with different fields.
 - `address: null` with `addressNote` means the element is real but outside the indexed root; not addressable, and saying so beats a silent `null`.
 - Text runs through the host's `redact` hook exactly as indexed text does.
 
@@ -478,7 +496,7 @@ Some sites publish `llms.txt`; one markdown file at the origin root listing page
 
 Perplexity is the honest counter-case: a *large* manifest on a page with *few* links costs more to list than the page costs to crawl. There, `find` is the right intent and `list` is not; which is why they are separate intents. That table also caught two real defects invisible on pages we control: `docs.anthropic.com` serves a valid 688-entry manifest as `content-type: text/html`, which an earlier content-type guard rejected; and the cross-origin accounting below.
 
-One call, three intents. Each failure names the next move instead of pretending every URL is readable through this tool. Every `list`/`find` response carries one response-level `urlSemantics` for its returned URLs. A manifest entry is `manifest-resource` (identifies the published resource, might be Markdown, not the live HTML route). A fallback DOM link is `live-page-link` and includes a resolvable address. Calling `read` with a `live-page-link` URL produces `NAVIGATE_INSTEAD`, reason `LIVE_PAGE_LINK`, and the address. With `goal: "navigate"`, Naviquest can verify a same-origin `.md` sibling as an HTML response and return it typed `kind: "live-page"`, `action: "navigate"`, `liveUrl`. Without that check it stays typed `kind: "resource"`, `action: "read"`, `resourceUrl`; clients never open a resource URL as a live page.
+One call, three intents. `intent` defaults to `"list"`, and `goal` defaults to `"read"` while remaining open vocabulary. Each failure names the next move instead of pretending every URL is readable through this tool. Every `list`/`find` response carries one response-level `urlSemantics` for its returned URLs. A manifest entry is `manifest-resource` (identifies the published resource, might be Markdown, not the live HTML route). A fallback DOM link is `live-page-link` and includes a resolvable address. Calling `read` with a `live-page-link` URL produces `NAVIGATE_INSTEAD`, reason `LIVE_PAGE_LINK`, and the address. With `goal: "navigate"`, Naviquest can verify a same-origin `.md` sibling as an HTML response and return it typed `kind: "live-page"`, `action: "navigate"`, `liveUrl`. Without that check it stays typed `kind: "resource"`, `action: "read"`, `resourceUrl`; clients never open a resource URL as a live page.
 
 ### `intent: "list"`; what this site publishes
 
@@ -600,9 +618,9 @@ Retrieval is useless if an agent can't act on what it read. Every result carries
 }
 ```
 
-### `resolveWith`; which tool an address is for
+### `resolveWith`; which path resolves an address
 
-Two structurally identical addresses come back from `find_on_page` that need **different tools**:
+Addresses can represent regions or controls. Both go to `resolve_address`; the address selects the correct internal path:
 
 | Address | Where it comes from | Resolve it with |
 |---|---|---|

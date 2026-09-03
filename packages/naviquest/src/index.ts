@@ -1320,7 +1320,8 @@ export type {
   FindOnPageInput, FindOnPageResult, FindOnPageSuccess,
   OrientationSection, PageInput,
   LocateControlInput, LocateControlNoMatch, LocateControlResult, LocateControlSuccess,
-  OutlineRow, QuerySelectorField, QuerySelectorInput, QuerySelectorResult, QuerySelectorSuccess,
+  OutlineRow, QuerySelectorExactSuccess, QuerySelectorField, QuerySelectorInput,
+  QuerySelectorResult, QuerySelectorSuccess, QuerySelectorViewSuccess,
   ResolveAddressInput, ResolveAddressMiss, ResolveAddressResult, ResolveAddressSuccess, ResolveRegionSuccess,
   PaginationEnvelope, SummaryEnvelope, ToolEnvelope, ToolFailure, ToolSuccessEnvelope, NaviquestTools,
 } from './tools/tool-contracts.ts';

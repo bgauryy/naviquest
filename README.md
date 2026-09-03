@@ -195,6 +195,11 @@ all affect the result. In particular, a fetch loop can be cheaper for a short,
 static page, while bounded retrieval is most useful when a large page is
 repeatedly sent to a model.
 
+> **Small-page benchmark disclaimer:** On four small synthetic pages, fetch is
+> still much cheaper and faster. Treat that CityDesk comparison as a
+> proof-of-concept result, not evidence that Naviquest reduces total task cost on
+> every site.
+
 Live-site measurements also vary between runs. A page can serve different source
 payloads, render content after a fetch, or change its navigation surface. Compare
 quality, total context, and largest response under a frozen task; do not turn one
@@ -239,6 +244,10 @@ flowchart LR
   H --> D["describe_app changesSince<br/><b>observe delta</b>"]
   D -->|"page changed"| F
 ```
+
+This diagram shows a common interaction loop, not a required sequence. An agent
+can start with content search, control lookup, exact CSS, a semantic inventory,
+or site-resource discovery when it already has enough context.
 
 Every response carries an `outcome` (`success` · `degraded` · `ambiguous` · `not_found` · `error`) and separates evidence from guesses: only `answer` is an answer; `confidence` and `coverage` say how well the query was covered and what was unreachable. Wire shapes: [TOOLS.md](./docs/TOOLS.md).
 

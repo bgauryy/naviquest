@@ -332,8 +332,8 @@ fails there rather than after publish.
 
 ## Six tools
 
-The six tools form a continuous navigation loop rather than a one-shot page
-read:
+The six tools support continuous navigation and research without requiring a
+fixed starting call:
 
 | Tool | Agent question | Result |
 |---|---|---|
@@ -342,23 +342,24 @@ read:
 | `locate_control` | Which control performs this job? | Ranked live controls with state, context, confidence, and refinements |
 | `resolve_address` | Can I read or act on this result now? | Full region text, or fresh control state, box, navigation data, and a last-resort selector |
 | `query_selector` | What actions, forms, regions, scopes, or exact CSS matches exist? | Bounded semantic inventories or guarded exact inspection |
-| `agentic_content` | Does the answer live elsewhere on this site? | Same-origin agent resources and verified live-page pagination |
+| `agentic_content` | Does the answer live elsewhere on this site? | Same-origin resources or live-page links, with bounded pagination |
 
-The normal flow is:
+Choose the narrowest entry point supported by what the agent already knows:
 
-1. Call `describe_app` to orient.
-2. Use `find_on_page`, `locate_control`, or `query_selector` for the task.
-3. Copy the returned address into `resolve_address` immediately before reading
-   or acting.
-4. Let the automation host perform the action.
-5. Pass the previous observation to `describe_app({ changesSince })` to inspect
-   the outcome.
+- For an unfamiliar page or scope, use `describe_app`.
+- For a question or passage, use `find_on_page`.
+- For an open-ended user job, use `locate_control`.
+- For known CSS or an explicit inventory, use `query_selector`.
+- For another page or published resource, use `agentic_content`.
+- For a returned address, use `resolve_address` to expand or revalidate it.
+- After the automation host acts, pass the previous observation to
+  `describe_app({ changesSince })` to inspect the outcome.
 
 Use `agentic_content` when the required evidence is on another page of the same
 site. Region reading is part of `resolve_address` through `expand` or
 `resolveWith: 'read_region'`. Use `describe_app({ opaque: true })` to locate
 meaningful regions that the text index cannot read. See the
-[tool schemas](./src/tool-specs.ts) for the complete wire surface.
+[tool schemas](./src/tools/tool-specs.ts) for the complete wire surface.
 
 ## Retrieval lanes
 

@@ -43,7 +43,7 @@ import type { PageStructure } from './structure.ts';
 import type { Budgeter, Shrink, ToolPayload } from './budget.ts';
 import type { DeltaStore } from './delta.ts';
 import { boxOf } from '../types.ts';
-import { flatClosest, flatContains, idRefTarget, queryScopes } from '../page/dom.ts';
+import { flatClosest, flatContains, flatParentElement, idRefTarget, queryScopes } from '../page/dom.ts';
 import type { Address, Chunk, Hit, ProjectedNode, Projection, QAPair, Resolution, RetrievalLane, Segmentation, States } from '../types.ts';
 import type { ToolName, Tuning } from '../config.ts';
 import type { Awaitable, ContentSearchResult, ControlSearchResult, Lane } from '../retrieval/lane.ts';
@@ -1346,11 +1346,9 @@ export function createTools(d: ToolDeps) {
     return chain(ensureFresh(), () => querySelectorBody(selector!, limit, offset, revision, frames ?? true, fields));
   }
 
-  /** Which fields to emit per match. Default is the actionable set WITHOUT
-   *  text; exact CSS can reach elements with arbitrarily large descendants,
-   *  and slicing that text would leave no lossless recovery path. A caller
-   *  that explicitly asks for `text` gets the complete redacted value and may
-   *  receive `_overBudget` if even one indivisible row exceeds the ceiling. */
+  /** Which fields to emit per match. Discovery defaults to compact identity and
+   *  provenance; volatile state and descendant text are opt-in. Oversized text
+   *  is clipped after redaction and declares its recovery path. */
   const selectorElementIds = new WeakMap<Element, number>();
   const selectorScopeIds = new WeakMap<object, number>();
   let nextSelectorElementId = 1;
@@ -1695,7 +1693,7 @@ export function createTools(d: ToolDeps) {
     const want = new Set(
       Array.isArray(fields) && fields.length
         ? fields
-        : ['tag', 'role', 'name', 'state', 'address', 'scope'],
+        : ['tag', 'role', 'name', 'address', 'frame'],
     );
 
     const scan = queryScopes(document, {
@@ -1732,15 +1730,28 @@ export function createTools(d: ToolDeps) {
     // Retain and exactly compare the ordered element/root identities so a short
     // hash collision cannot advance an agent past rows it never received.
     const cursor = selectorCursor(revision as string | undefined, offset,
-      `selector:${selector}:frames:${frames}:fields:${JSON.stringify(fields ?? null)}`,
+      // Fields project an already selected element; they do not change the
+      // population. Keeping them out of the cursor key lets discovery stay
+      // compact and the second call fetch different evidence for one exact hit.
+      `selector:${selector}:frames:${frames}`,
       matches.map(({ el, scope }) => `${scopeIdentity(scope.root)}:${elementIdentity(el)}:${scope.path}`));
     if ('error' in cursor) return cursor;
     const populationRevision = cursor.revision;
 
     const page = matches.slice(offset, offset + limit);
-    const rows = page.map(({ el, scope }) => {
+    const rows = page.map(({ el, scope }, pageIndex) => {
       const node = nodeForElement(el);
-      const row: ToolPayload = {};
+      // Absolute position in the cursor-bound population. Unlike generated CSS,
+      // selector + revision + index identifies a hit inside readable frames and
+      // shadow roots too, and survives budget shrinkage of the returned suffix.
+      const row: ToolPayload = { index: offset + pageIndex };
+      let generatedSelector: string | null | undefined;
+      const inspectionSelector = () => {
+        if (generatedSelector === undefined) {
+          generatedSelector = selectorOfLastResort(el, cfg.address.selectorMaxDepth);
+        }
+        return generatedSelector;
+      };
       if (want.has('tag')) row.tag = el.tagName.toLowerCase();
       if (want.has('scope')) row.scope = scope.path;
       if (want.has('frame') && scope.frameLabel) row.frame = scope.frameLabel;
@@ -1772,6 +1783,18 @@ export function createTools(d: ToolDeps) {
         // crop/action to the returned frame provenance.
         row.boxSpace = scope.frameDepth > 0 ? 'scope-viewport' : 'top-level-viewport';
       }
+      if (want.has('selector')) {
+        row.selector = inspectionSelector();
+        if (!row.selector) {
+          row.selectorNote = 'Standard document CSS cannot address this frame or shadow-tree element; use its address when available.';
+        }
+      }
+      if (want.has('parent')) {
+        const parent = flatParentElement(el);
+        row.parent = parent
+          ? { tag: parent.localName, role: roleOf(parent) }
+          : null;
+      }
       if (want.has('attributes')) {
         // Which attributes carry semantics is a judgement, so it lives in
         // config (`retrieval.qsAttributes`) — a trailing `-` is a prefix.
@@ -1794,7 +1817,7 @@ export function createTools(d: ToolDeps) {
           // enough to act on THIS one. Same field name resolve_address uses, so
           // there is one vocabulary for a generated selector, and the same
           // caveat: generated fresh, never stored, never an identity.
-          row.selectorOfLastResort = selectorOfLastResort(el, cfg.address.selectorMaxDepth);
+          row.selectorOfLastResort = inspectionSelector();
         }
       }
       return row;

@@ -232,12 +232,3 @@ The completed dashboard and
 The run passes when both arms have five findings, the judge has ten valid answer
 verdicts, every payload-token total comes from `/call`, and the dashboard reaches
 the results stage with complete answers.
-
-## Last verified run
-
-The last completed five-question run returned an estimated **19,594
-retrieval-payload tokens with Naviquest** and **28,333 with fetch**. Naviquest used **1.5×
-fewer payload tokens per question at the median** (IQR 1.1×–1.8×) and **1.4×
-fewer in total**. These numbers record one example; they are neither an expected
-result nor an acceptance threshold. Each new run must publish its own measured
-comparison.

@@ -177,7 +177,7 @@
     <div class="lanes">
       <div class="lane nq">
         <div class="who"><span id="nq-live" class="dotidle"></span> naviquest agent</div>
-        <div class="tools">six WebMCP tools · one warm tab · real Chrome over CDP</div>
+        <div class="tools">six WebMCP tools · fresh measured sessions · real Chrome over CDP</div>
         <div class="lbl">now checking</div>
         <div class="qtext" id="nq-q">waiting to start…</div>
         <div><span class="site" id="nq-site"></span> <span class="badge" id="nq-phase"></span></div>
@@ -455,7 +455,7 @@ function setEnv(o){
   if(o.chromeVersion){$('chrome').textContent=o.chromeVersion;$('chrome').className='pill on';stage('race');}
   if(o.plan){plan=o.plan;buildGrid();for(const a of ['naviquest','baseline'])renderProg(a);
     if(plan.sites&&plan.sites.length)
-      $('oneliner').innerHTML=`Bounded per-tool retrieval keeps every result flat (~1–2k tokens) no matter how big the page is, so the agent's context never scales with the page. The trade-off is honest; one <code>fetch</code> is a single round-trip. This run: <b>${plan.findings} questions across ${plan.sites.length} sites</b>, single run, POC scale.`;}
+      $('oneliner').innerHTML=`Bounded per-tool retrieval keeps every result flat (~1–2k tokens) no matter how big the page is, so the agent's context never scales with the page. The trade-off is honest; one <code>fetch</code> is a single round-trip. This run: <b>${plan.findings} questions</b>, single run, POC scale.`;}
 }
 function connect(){
   const ws=new WebSocket(`ws://${location.host}`);

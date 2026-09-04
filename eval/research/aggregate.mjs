@@ -127,11 +127,11 @@ if (mode === 'validate') {
     }).join('\n');
     const md = `# Research race — results
 
-*Two real agents, same ${R.naviquest.tasks} tasks over ${R.naviquest.tasks / 2} pages across ${new Set(nq.map((f) => f.site)).size} sites. Quality scored blind by an LLM judge (no gold key); tokens, context held, speed and crawler reach are measured by the harness. Small n, single run — a POC-scale signal, not a benchmark.*
+*Two real agents, same ${R.naviquest.tasks} questions. Quality scored blind by an LLM judge (no gold key); tokens, context held, speed and crawler reach are measured by the harness. Small n, single run — a POC-scale signal, not a benchmark.*
 
-Environment: ${env.chromeVersion || 'Chrome over raw CDP'} · built-in AI ${env.connectedOverCDP === false ? 'off' : 'download-gated, deterministic path pinned'} · token cost = chars/4 of the full tool result (matches the SDK's own \`_tokens\`).
+Environment: ${env.chromeVersion || 'Chrome over raw CDP'} · built-in AI ${env.aiMode === 'off' ? 'off (deterministic retrieval path)' : env.aiMode || 'state not recorded'} · token cost = chars/4 of the full tool result (matches the SDK's own \`_tokens\`).
 
-The baseline here is **steelmanned**: readability-extracted main content (not a whole-page dump) with a per-session fetch cache, so a page it already read is free on the crawl step (no double-count).
+The baseline here is **steelmanned**: readability-extracted main content (not a whole-page dump), plus discovered links. Both arms start a fresh isolated session for every question.
 
 ## Headline
 

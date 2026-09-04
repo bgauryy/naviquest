@@ -100,13 +100,19 @@ const armView = (a) => ({ tokens: a.tokens, calls: a.calls, ms: a.ms, pages: a.p
 let plan = { sites: [], findings: 0, tasks: [] };
 try {
   const raw = JSON.parse(await readFile(path.join(HERE, 'out', 'tasks.json'), 'utf8'));
-  plan = {
-    sites: [...new Set(raw.map((t) => t.site))],
-    findings: raw.length * 2,
-    tasks: raw.flatMap((t) => [
+  // A POC can define one independent research question per row (`task`) while
+  // the broader benchmark pairs read/crawl questions. Normalize both shapes at
+  // the dashboard boundary so the measured call and grading paths stay shared.
+  const tasks = raw.flatMap((t) => t.task
+    ? [{ site: t.site, phase: t.phase === 'crawl' ? 'crawl' : 'read', task: t.task }]
+    : [
       { site: t.site, phase: 'read', task: t.read },
       { site: t.site, phase: 'crawl', task: t.crawl },
-    ]),
+    ]);
+  plan = {
+    sites: [...new Set(raw.map((t) => t.site))],
+    findings: tasks.length,
+    tasks,
   };
 } catch { console.error('[harness] out/tasks.json unreadable — progress will be unbounded'); }
 

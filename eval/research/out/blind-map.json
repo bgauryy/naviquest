@@ -1,0 +1,32 @@
+[
+  {
+    "site": "POC question 1",
+    "task": "What does a valid WebMCP Challenge submission have to include? List all deliverables and the specific requirements for the project description, demo video, and source-code repository.",
+    "A": "baseline",
+    "B": "naviquest"
+  },
+  {
+    "site": "POC question 2",
+    "task": "Can a project begun before August 25, 2026 qualify? Explain which work counts, how judges assess it, and what evidence the entrant must provide.",
+    "A": "naviquest",
+    "B": "baseline"
+  },
+  {
+    "site": "POC question 3",
+    "task": "Give the final extended submission deadline in PT and in EDT. Explain why it changed and identify the three project artifacts that must remain unchanged after submissions close.",
+    "A": "naviquest",
+    "B": "baseline"
+  },
+  {
+    "site": "POC question 4",
+    "task": "How do the two judging stages work? Name all four equally weighted criteria in the second stage and explain the tie-breaking order.",
+    "A": "naviquest",
+    "B": "baseline"
+  },
+  {
+    "site": "POC question 5",
+    "task": "How can judges test a submitted application in each supported browser environment? Include the minimum Chrome version and required flag, whether judges must open the live application, and where an entrant must provide private login credentials.",
+    "A": "baseline",
+    "B": "naviquest"
+  }
+]

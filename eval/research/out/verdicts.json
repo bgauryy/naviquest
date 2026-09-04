@@ -1,0 +1,72 @@
+[
+ {
+  "site": "POC question 1",
+  "task": "What does a valid WebMCP Challenge submission have to include? List all deliverables and the specific requirements for the project description, demo video, and source-code repository.",
+  "arm": "baseline",
+  "quality": "unsupported",
+  "reason": "Refuses to answer despite the live challenge page exposing the complete submission requirements."
+ },
+ {
+  "site": "POC question 1",
+  "task": "What does a valid WebMCP Challenge submission have to include? List all deliverables and the specific requirements for the project description, demo video, and source-code repository.",
+  "arm": "naviquest",
+  "quality": "correct",
+  "reason": "Accurately lists the live URL, description, public video, and public repository, including the specific description topics, sub-three-minute YouTube video with audio, repository contents, visible license, and WebMCP registration implementation."
+ },
+ {
+  "site": "POC question 2",
+  "task": "Can a project begun before August 25, 2026 qualify? Explain which work counts, how judges assess it, and what evidence the entrant must provide.",
+  "arm": "naviquest",
+  "quality": "correct",
+  "reason": "Correctly states that a pre-existing project must be meaningfully extended with WebMCP during the submission period, is judged only on new work, and requires clear before/after documentation with dated commits or equivalent evidence."
+ },
+ {
+  "site": "POC question 2",
+  "task": "Can a project begun before August 25, 2026 qualify? Explain which work counts, how judges assess it, and what evidence the entrant must provide.",
+  "arm": "baseline",
+  "quality": "correct",
+  "reason": "Correctly explains eligibility, evaluation of only the eligible additions, and the required documentation separating prior work from the WebMCP extension, with dated commit history or comparable proof."
+ },
+ {
+  "site": "POC question 3",
+  "task": "Give the final extended submission deadline in PT and in EDT. Explain why it changed and identify the three project artifacts that must remain unchanged after submissions close.",
+  "arm": "naviquest",
+  "quality": "correct",
+  "reason": "The extension notice confirms September 4 at 1:00 AM PT because of an ongoing outage; that is 4:00 AM EDT. The deadline reminder names the repository, video, and live site as immutable and says the site must remain online."
+ },
+ {
+  "site": "POC question 3",
+  "task": "Give the final extended submission deadline in PT and in EDT. Explain why it changed and identify the three project artifacts that must remain unchanged after submissions close.",
+  "arm": "baseline",
+  "quality": "unsupported",
+  "reason": "It declines to supply the requested facts even though the extension notice and deadline reminder expose them."
+ },
+ {
+  "site": "POC question 4",
+  "task": "How do the two judging stages work? Name all four equally weighted criteria in the second stage and explain the tie-breaking order.",
+  "arm": "naviquest",
+  "quality": "unsupported",
+  "reason": "It declines to answer although the official rules expose both judging stages, all four criteria, and the tie-breaking procedure."
+ },
+ {
+  "site": "POC question 4",
+  "task": "How do the two judging stages work? Name all four equally weighted criteria in the second stage and explain the tie-breaking order.",
+  "arm": "baseline",
+  "quality": "correct",
+  "reason": "Accurately describes the pass/fail viability screen, the four equally weighted criteria, and sequential tie-breaking by listed criterion followed by a judges’ vote."
+ },
+ {
+  "site": "POC question 5",
+  "task": "How can judges test a submitted application in each supported browser environment? Include the minimum Chrome version and required flag, whether judges must open the live application, and where an entrant must provide private login credentials.",
+  "arm": "baseline",
+  "quality": "correct",
+  "reason": "Matches the rules: ChatGPT’s in-app browser or Chrome 149+ with the WebMCP testing flag, judges may evaluate solely from submitted materials without testing the live app, and private-site credentials belong in testing instructions."
+ },
+ {
+  "site": "POC question 5",
+  "task": "How can judges test a submitted application in each supported browser environment? Include the minimum Chrome version and required flag, whether judges must open the live application, and where an entrant must provide private login credentials.",
+  "arm": "naviquest",
+  "quality": "partial",
+  "reason": "The browser version, flag, and credential location are correct, but it incorrectly says judges must visit the live application; the rules expressly say judges are not required to test it."
+ }
+]

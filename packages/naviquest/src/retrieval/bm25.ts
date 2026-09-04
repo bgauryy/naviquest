@@ -71,8 +71,8 @@ export function rrf(lists: Hit[][], k = RRF_K, limit = 10): Hit[] {
  * lexical results, and the ranking that BM25 produces when it produces anything
  * at all is the one this SDK is accountable for.
  */
-const trigrams = (s: string): Set<string> => {
-  const t = ` ${(s || '').toLowerCase().replace(/\s+/g, ' ')} `;
+const trigrams = (s: string, fold: (text: string) => string): Set<string> => {
+  const t = ` ${fold(s || '').replace(/\s+/g, ' ')} `;
   const out = new Set<string>();
   for (let i = 0; i < t.length - 2; i++) out.add(t.slice(i, i + 3));
   return out;
@@ -80,12 +80,13 @@ const trigrams = (s: string): Set<string> => {
 
 // No parameter defaults: `floor`'s shipped value lives in config.ts (`fuzzyFloor`)
 // and a second copy here was one that could silently stop matching it.
-export function fuzzyRank(docs: string[], query: string, k: number, floor: number): Hit[] {
-  const q = trigrams(query);
+export function fuzzyRank(docs: string[], query: string, k: number, floor: number,
+                          fold: (text: string) => string = (text) => text.toLowerCase()): Hit[] {
+  const q = trigrams(query, fold);
   if (!q.size) return [];
   const scored: Hit[] = [];
   for (let i = 0; i < docs.length; i++) {
-    const d = trigrams(docs[i]);
+    const d = trigrams(docs[i], fold);
     if (!d.size) continue;
     let shared = 0;
     for (const g of q) if (d.has(g)) shared++;

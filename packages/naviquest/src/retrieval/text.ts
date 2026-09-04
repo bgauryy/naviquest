@@ -29,11 +29,15 @@ export interface Tokenizer {
 }
 
 /** Diacritic-stripping casefold (NFKD + strip combining marks + lowercase). One
- *  definition, shared by the tokenizer here and language.ts's name matching — a
- *  second hand-written copy is one that silently stops matching this one.
- *  Locale-aware folding (Turkish dotless-İ) is exact.ts's separate concern. */
-export const foldDiacritics = (s: string): string =>
-  s.normalize('NFKD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+ *  definition, shared by the tokenizer, exact matcher, fuzzy fallback, and
+ *  language.ts name matching — a second hand-written copy is one that silently
+ *  stops matching this one. */
+/** Locale-aware case and diacritic folding shared by lexical consumers.
+ * Lowercase before decomposition: Turkish capital dotted İ must become `i`,
+ * while dotless I remains `ı`. Default Unicode lowercasing collapses I and İ
+ * and can make the wrong passage win a BM25 tie on a Turkish page. */
+export const foldDiacritics = (s: string, locale?: string): string =>
+  s.toLocaleLowerCase(locale).normalize('NFKD').replace(/\p{Diacritic}/gu, '');
 
 export function makeTokenizer(locale: string = docLocale(),
                               opts: Partial<TextTuning> = {}): Tokenizer {
@@ -70,7 +74,7 @@ export function makeTokenizer(locale: string = docLocale(),
     catch { seg = new Intl.Segmenter('en', { granularity: 'word' }); }
   }
   locale = seg.resolvedOptions().locale;
-  const fold = foldDiacritics;
+  const fold = (s: string) => foldDiacritics(s, locale);
   return {
     locale,
     tokens(str: string) {

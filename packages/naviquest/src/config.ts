@@ -168,8 +168,9 @@ export interface LexicalTuning {
   /** Length normalisation. 0.75 is canonical; 0 disables it entirely, which a
    *  corpus of uniformly short control names may genuinely want. */
   b: number;
-  /** Reciprocal Rank Fusion constant. 60 is the RRF paper's value and the one
-   *  every measurement in docs/VALIDATION.md § 8 was taken at. */
+  /** Reciprocal Rank Fusion constant. 60 is the RRF paper's value and the
+   *  historical baseline recorded in docs/EVAL.md. Rebuild the ranking sensor
+   *  before retuning it. */
   rrfK: number;
   /**
    * BM25F-lite: how many times a chunk's heading path is included in its
@@ -895,9 +896,9 @@ export const DEFAULTS: Tuning = {
      * the value below is chosen inside that gap. It is EMPIRICAL and says so: a
      * parameter-free alternative was tried first — gate the answer on summed idf
      * against `ln(n)`, the self-information needed to identify one chunk in n —
-     * and it measured 1/10 on `answer:eval` against 5/10, because a correct
+     * and it historically measured 1/10 against 5/10, because a correct
      * short sentence often matches only one content term. Elegance lost to the
-     * sweep in docs/VALIDATION.md.
+     * recorded sweep. Rebuild that sensor before changing this threshold.
      */
     contentTermShare: 0.25,
     /** Confidence bands over informative-term coverage. Measured against 35

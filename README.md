@@ -84,6 +84,28 @@ research task. If a minimum valid record cannot fit, Naviquest returns the
 smallest valid payload and declares `_overBudget` instead of silently
 truncating it.
 
+### Research dynamic websites incrementally
+
+Naviquest lets an agent research a changing website or web application without
+copying the full page into its context. Before a tool answers, the SDK refreshes
+its semantic index when observed DOM, ARIA, route, slot, modal, font, frame, or
+layout signals change. The agent can then search the updated view, compare a
+semantic observation after an action, and re-resolve an earlier address against
+the live page instead of trusting a stale element reference.
+
+This loop supports client-rendered pages, single-page application navigation,
+open shadow roots, host-registered closed roots, and readable same-origin frames.
+Each result stays bounded and carries evidence, freshness metadata, and a next
+step, so the agent can investigate a dynamic page through targeted calls rather
+than repeated page dumps.
+
+The browser does not expose every change through those signals. After a
+CSSOM-only visibility change, call `reindex()` to rebuild immediately. Naviquest
+cannot search content that a virtualized application has not placed in the DOM.
+Naviquest reports coverage gaps instead of treating the indexed view as
+complete. For the measured behavior and remaining limits, see
+[Evaluation and evidence](./docs/EVAL.md).
+
 **Why now.** WebMCP is standardizing a page‑side tool boundary and Chrome is shipping on‑device Gemini Nano. These primitives now make in-browser agentic research possible, and Naviquest is the retrieval layer that uses them.
 
 No backend. No keys. No prebuilt crawl. Runs on any origin; every AI lane fails open to a lexical baseline.
@@ -155,6 +177,9 @@ root is permanently removed.
 | `onIntent` | Surface a one-line agent reason in your UI. | Receives the tool and untrusted reason text; render it as text, never HTML. |
 | `orientation` | Add first-party application guidance. | Returns a provenance-tagged `authored` block from `describe_app()`. |
 | `tuning` | Override retrieval, projection, and response limits. | Uses the documented `PartialTuning` shape from [`config.ts`](./packages/naviquest/src/config.ts). |
+
+Call `reindex()` after a host-known change that does not mutate the DOM, such as
+editing a CSS rule through the CSSOM.
 
 `orientation` is optional and belongs only to a site you own. It adds product
 knowledge to the generic DOM and ARIA model; it does not replace live landmarks,

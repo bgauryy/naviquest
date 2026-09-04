@@ -6,9 +6,9 @@
  *   - the NAVIQUEST agent calls the six tools on ONE persistent browser tab.
  *   - the BASELINE agent uses a plain `fetch` web tool (GET a URL → page text),
  *     exactly what a regular research agent does — it reads pages and decides.
- * Every tool call is charged (tokens = chars/4) and TIMED (ms), and broadcast to
- * the dashboard over a WebSocket the instant it happens — the page never polls or
- * refreshes. The driver (Claude) spawns the two agents as subagents; an LLM judge
+ * Every returned research payload is estimated (tokens = chars/4) and TIMED
+ * (ms), then broadcast to the dashboard over a WebSocket the instant it happens
+ * — the page never polls or refreshes. The driver spawns two research agents; an LLM judge
  * scores their answers blind. Crawler / efficiency / speed all fall out of the
  * per-call stats.
  *
@@ -19,12 +19,14 @@
  * model, or reader policy here to drift from the runtime being evaluated.
  */
 import http from 'node:http';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
-import { readFile } from 'node:fs/promises';
+import { readFile, rm, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+const OUT = path.join(HERE, 'out');
 const PORT = Number(process.env.HARNESS_PORT || 5331);
 const NAVIQUEST_HOST = process.env.NAVIQUEST_HOST || 'http://127.0.0.1:5340';
 const tok = (s) => Math.ceil((s || '').length / 4);
@@ -81,7 +83,7 @@ const chromeVersion = hostHealth.browser;
 const connectedOverCDP = hostHealth.transport === 'webmcp-cdp';
 
 const NQ_TOOLS = new Set(['describe_app', 'find_on_page', 'locate_control', 'query_selector', 'resolve_address', 'agentic_content']);
-const sessions = new Map();   // id -> { arm, page, tab, calls, tokens, ms, pages: Set<url> }
+const sessions = new Map();   // id -> per-question measured state
 let nextId = 1;
 
 // Cumulative per-ARM totals — the single source of truth the dashboard displays.
@@ -90,6 +92,14 @@ let nextId = 1;
 const armTotal = () => ({ tokens: 0, calls: 0, ms: 0, pages: new Set(), done: new Set(), now: null, liveCalls: 0 });
 const arm = { naviquest: armTotal(), baseline: armTotal() };
 const armView = (a) => ({ tokens: a.tokens, calls: a.calls, ms: a.ms, pages: a.pages.size, done: a.done.size, now: a.now });
+const sessionView = (s) => ({
+  tokens: s.tokens,
+  calls: s.calls,
+  ms: s.ms,
+  pagesReached: s.pages.size,
+  contextHeld: s.contextHeld,
+  toolTrace: [...s.toolTrace],
+});
 
 /**
  * The PLAN — what both arms are asked, read once at boot from out/tasks.json.
@@ -97,9 +107,9 @@ const armView = (a) => ({ tokens: a.tokens, calls: a.calls, ms: a.ms, pages: a.p
  * ticker, and to prove on screen that both agents got the SAME questions: the
  * plan is the single list, and each arm's `done` set is keyed against it.
  */
-let plan = { sites: [], findings: 0, tasks: [] };
+let plan = { sites: [], findings: 0, tasks: [], taskPlanHash: null };
 try {
-  const raw = JSON.parse(await readFile(path.join(HERE, 'out', 'tasks.json'), 'utf8'));
+  const raw = JSON.parse(await readFile(path.join(OUT, 'tasks.json'), 'utf8'));
   // A POC can define one independent research question per row (`task`) while
   // the broader benchmark pairs read/crawl questions. Normalize both shapes at
   // the dashboard boundary so the measured call and grading paths stay shared.
@@ -113,8 +123,19 @@ try {
     sites: [...new Set(raw.map((t) => t.site))],
     findings: tasks.length,
     tasks,
+    taskPlanHash: createHash('sha256').update(JSON.stringify(tasks)).digest('hex'),
   };
 } catch { console.error('[harness] out/tasks.json unreadable — progress will be unbounded'); }
+
+const envView = () => ({ connectedOverCDP, chromeVersion, aiMode: AI_MODE, naviquestHost: NAVIQUEST_HOST, plan });
+const CURRENT_RUN_ARTIFACTS = [
+  'naviquest.jsonl', 'baseline.jsonl', 'pairs.json', 'blind-map.json',
+  'judge-raw.json', 'verdicts.json', 'RESULTS.md', 'env.json',
+];
+async function resetRunArtifacts() {
+  await Promise.all(CURRENT_RUN_ARTIFACTS.map((file) => rm(path.join(OUT, file), { force: true })));
+  await writeFile(path.join(OUT, 'env.json'), `${JSON.stringify(envView(), null, 2)}\n`);
+}
 
 const wss = new WebSocketServer({ noServer: true });
 const clients = new Set();
@@ -128,7 +149,10 @@ const host = (u) => { try { return new URL(u).host.replace(/^www\./, ''); } catc
 
 async function newSession(armName) {
   const id = 's' + (nextId++);
-  const sess = { id, arm: armName, calls: 0, tokens: 0, ms: 0, pages: new Set(), site: '' };
+  const sess = {
+    id, arm: armName, calls: 0, tokens: 0, ms: 0,
+    pages: new Set(), contextHeld: 0, toolTrace: [], site: '',
+  };
   if (armName === 'naviquest') {
     const created = await hostRequest('/session', {
       method: 'POST',
@@ -166,22 +190,26 @@ async function runCall(sess, tool, args, meta) {
   }
   if (sess.arm === 'baseline') {
     // A STEELMANNED regular agent's web tool: readability-extracted main content
-    // (not the whole raw page), plus links, with a per-session fetch CACHE so a page
-    // the agent already read is free on re-fetch — a real agent holds it in context.
+    // (not the whole raw page), plus links, with a per-session fetch cache. A cache
+    // hit avoids network work, but its returned payload is still charged because
+    // the agent receives those bytes again.
     if (tool !== 'fetch') throw new Error('baseline has only the `fetch` tool');
     const url = args.url;
     (sess.fetchCache ||= new Map());
     const cached = sess.fetchCache.get(url);
     if (cached) {
-      // Already in the agent's context — no NEW tokens ingested. This removes the
-      // cross-task double-count where a crawl re-fetches the read task's start page.
+      const result = { ...cached, cached: true };
+      const t = agentTokens(result);
       sess.pages.add(url); sess.site = host(url);
       const ms0 = now() - t0;
-      sess.calls++;
-      const A0 = arm[sess.arm]; A0.calls++;
-      record({ ev: 'call', id: sess.id, arm: sess.arm, site: sess.site, tool, tokens: 0, ms: ms0,
-        note: `fetch ${host(url)} (cached — already held, 0 new tokens)`, totals: armView(A0) });
-      return { result: { ...cached, cached: true }, tokens: 0, ms: ms0 };
+      sess.calls++; sess.tokens += t; sess.ms += ms0;
+      sess.contextHeld = Math.max(sess.contextHeld, t); sess.toolTrace.push(tool);
+      const A0 = arm[sess.arm];
+      A0.calls++; A0.tokens += t; A0.ms += ms0; A0.liveCalls++; for (const p of sess.pages) A0.pages.add(p);
+      record({ ev: 'call', id: sess.id, arm: sess.arm, site: sess.site, tool, tokens: t, ms: ms0, contextHeld: t,
+        task: sess.task || null, phase: sess.phase || null,
+        note: `fetch ${host(url)} (cache hit; returned payload charged)`, totals: armView(A0) });
+      return { result, tokens: t, ms: ms0, totals: sessionView(sess) };
     }
     const res = await fetch(url, { headers: { 'user-agent': 'Mozilla/5.0 (research-agent)' }, signal: AbortSignal.timeout(20000) });
     const html = await res.text();
@@ -227,13 +255,14 @@ async function runCall(sess, tool, args, meta) {
   }
   const ms = now() - t0, t = agentTokens(result);
   sess.calls++; sess.tokens += t; sess.ms += ms;
+  sess.contextHeld = Math.max(sess.contextHeld, t); sess.toolTrace.push(tool);
   const A = arm[sess.arm];
   A.calls++; A.tokens += t; A.ms += ms; A.liveCalls++; for (const p of sess.pages) A.pages.add(p);
   if (sess.task) A.now = { site: sess.site, task: sess.task, phase: sess.phase };
-  record({ ev: 'call', id: sess.id, arm: sess.arm, site: sess.site, tool, tokens: t, ms, note,
+  record({ ev: 'call', id: sess.id, arm: sess.arm, site: sess.site, tool, tokens: t, ms, contextHeld: t, note,
     task: sess.task || null, phase: sess.phase || null,
     totals: armView(A) });   // per-ARM cumulative, not per-session
-  return { result, tokens: t, ms };
+  return { result, tokens: t, ms, totals: sessionView(sess) };
 }
 
 // JSON.parse must be wrapped: a malformed body (curl escaping the complex answer
@@ -250,7 +279,11 @@ process.on('unhandledRejection', (e) => console.error('[harness] unhandledReject
 const server = http.createServer(async (req, res) => {
   try {
     if (req.url === '/' ) { res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }); res.end(await readFile(path.join(HERE, 'dashboard.html'), 'utf8')); return; }
-    if (req.url === '/session' && req.method === 'POST') { const { arm } = await body(req); const id = await newSession(arm); res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ id, arm })); return; }
+    if (req.url === '/session' && req.method === 'POST') {
+      const { arm } = await body(req);
+      if (arm !== 'naviquest' && arm !== 'baseline') { res.writeHead(400); res.end(JSON.stringify({ error: 'arm must be naviquest|baseline' })); return; }
+      const id = await newSession(arm); res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ id, arm })); return;
+    }
     if (req.url === '/call' && req.method === 'POST') {
       const { session, tool, args, task, phase } = await body(req); const sess = sessions.get(session);
       if (!sess) { res.writeHead(404); res.end(JSON.stringify({ error: 'no such session' })); return; }
@@ -280,12 +313,21 @@ const server = http.createServer(async (req, res) => {
         for (let i = 0; i < (Number(f.pagesReached) || 0); i++) A.pages.add(`${f.site}#${A.pages.size}`);
       }
       record({ ev: 'finding', arm: f.arm, site: f.site, task: f.task, phase: f.phase || null,
-        answer: String(f.answer || '').slice(0, 1200), tokens: f.tokens || 0, calls: f.calls || 0,
+        answer: String(f.answer || ''), tokens: f.tokens || 0, calls: f.calls || 0,
         ms: f.ms || 0, contextHeld: f.contextHeld || 0, toolTrace: f.toolTrace || [],
         totals: armView(A) });
       res.writeHead(200, { 'content-type': 'application/json' }); res.end('{"ok":true}'); return;
     }
-    if (req.url === '/reset' && req.method === 'POST') { await closeNaviquestSessions(); arm.naviquest = armTotal(); arm.baseline = armTotal(); run.events = []; run.verdicts = null; run.ratings = null; run.verdict = null; bcast({ ev: 'reset' }); res.writeHead(200, { 'content-type': 'application/json' }); res.end('{"ok":true}'); return; }
+    if (req.url === '/reset' && req.method === 'POST') {
+      await closeNaviquestSessions();
+      await resetRunArtifacts();
+      arm.naviquest = armTotal(); arm.baseline = armTotal();
+      run.events = []; run.verdicts = null; run.ratings = null; run.verdict = null;
+      bcast({ ev: 'reset' });
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, cleared: CURRENT_RUN_ARTIFACTS, env: envView() }));
+      return;
+    }
     // The driver posts the blind LLM-judge results here; the dashboard renders
     // quality next to cost — both are the point, neither alone is.
     if (req.url === '/judge' && req.method === 'POST') { const b = await body(req); run.verdicts = b.verdicts || null; run.ratings = b.ratings || null; run.verdict = b.verdict || null; record({ ev: 'judge', verdicts: run.verdicts, ratings: run.ratings, verdict: run.verdict }); res.writeHead(200, { 'content-type': 'application/json' }); res.end('{"ok":true}'); return; }
@@ -295,7 +337,7 @@ const server = http.createServer(async (req, res) => {
     if (req.url === '/load' && req.method === 'POST') {
       arm.naviquest = armTotal(); arm.baseline = armTotal(); run.events = [];
       for (const a of ['naviquest', 'baseline']) {
-        const f = path.join(HERE, 'out', `${a}.jsonl`);
+        const f = path.join(OUT, `${a}.jsonl`);
         let text; try { text = await readFile(f, 'utf8'); } catch { continue; }
         const rows = text.trim().split('\n').filter(Boolean).map((l) => JSON.parse(l));
         const A = arm[a];
@@ -305,12 +347,15 @@ const server = http.createServer(async (req, res) => {
           A.done.add(`${r.site} :: ${r.task}`);
           record({ ev: 'call', id: a, arm: a, site: r.site, tool: (r.toolTrace || []).join('→') || 'task',
             tokens: r.tokens, ms: r.ms, contextHeld: r.contextHeld, note: r.task, task: r.task,
-            answer: String(r.answer || '').slice(0, 1200), totals: armView(A) });
+            answer: String(r.answer || ''), totals: armView(A) });
+          record({ ev: 'finding', arm: a, site: r.site, task: r.task, phase: r.phase || 'read',
+            answer: String(r.answer || ''), tokens: r.tokens, calls: r.calls,
+            ms: r.ms, contextHeld: r.contextHeld, toolTrace: r.toolTrace || [], totals: armView(A) });
         }
       }
       res.writeHead(200, { 'content-type': 'application/json' }); res.end('{"ok":true}'); return;
     }
-    if (req.url === '/env' ) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ connectedOverCDP, chromeVersion, aiMode: AI_MODE, naviquestHost: NAVIQUEST_HOST, plan })); return; }
+    if (req.url === '/env' ) { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify(envView())); return; }
     res.writeHead(404); res.end('not found');
   } catch (e) { res.writeHead(500, { 'content-type': 'application/json' }); res.end(JSON.stringify({ error: String(e.message).slice(0, 200) })); }
 });

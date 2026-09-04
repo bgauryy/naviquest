@@ -232,9 +232,9 @@ speed) · per-arm totals · cost/context/speed bars · **blind-judge quality** �
 happened. A tab opened late replays the whole run.
 
 The harness refuses to start if the skill's host port is down; it will not
-quietly measure a different browser. Details and every audit that was run:
-[research/README.md](research/README.md) ·
-[research/METHODOLOGY.md](research/METHODOLOGY.md). Finished-run artifacts live
+quietly measure a different browser. The current five-question POC contract is
+in [../POC.md](../POC.md), with runtime details in
+[research/README.md](research/README.md). Finished-run artifacts live
 in `research/out/` (`RESULTS.md`, `verdicts.json`, the two `*.jsonl` finding
 files); `POST /load` replays them on the dashboard without re-running agents.
 

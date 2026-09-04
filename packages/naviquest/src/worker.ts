@@ -88,8 +88,8 @@ function build(msg: BuildMsg): LaneBuildResult {
 }
 
 /**
- * Fusion, exactly as measured (RFC § 5, VALIDATION § 8.2/8.6): Reciprocal Rank
- * Fusion at k = 60, and dense NEVER on its own. Alone it ranks below BM25 at
+ * Fusion, exactly as recorded in the historical ranking evidence: Reciprocal
+ * Rank Fusion at k = 60, and dense NEVER on its own. Alone it ranks below BM25 at
  * rank 1; fused it is worth +5 pp hit@1 and +9 pp hit@3.
  */
 function fuse(lexHits: Hit[], denseHits: Hit[] | null, k: number): Hit[] {
@@ -190,8 +190,8 @@ async function loadDense(msg: DenseMsg): Promise<DenseResult> {
      * The cache above turns the second PAGE LOAD free and does nothing for the
      * second TAB: two tabs opening cold both reach `match()` before either
      * `put()` has resolved, so both miss and both pull the full 3.90 MB table.
-     * VALIDATION § 8.7 prices that duplicate at 6.19 s on fast 4G, 13.90 s on
-     * regular 4G and 34.59 s on slow 4G — spent twice, on the single most
+     * Historical network measurements price that duplicate at 6.19 s on fast
+     * 4G, 13.90 s on regular 4G and 34.59 s on slow 4G — spent twice, on the
      * expensive resource this SDK fetches.
      *
      * The lock is keyed per URL, and the first thing INSIDE it is a second
@@ -271,7 +271,7 @@ ctx.onmessage = async (e: MessageEvent) => {
       case 'build': return reply(build(msg));
       case 'searchContent': return reply(searchContent(msg));
       case 'searchControls': return reply(searchControls(msg));
-      case 'fuzzy': return reply({ hits: fuzzyRank(s.controlDocs, msg.query, msg.k, msg.floor) });
+      case 'fuzzy': return reply({ hits: fuzzyRank(s.controlDocs, msg.query, msg.k, msg.floor, s.tok!.fold) });
       case 'dense': return reply(await loadDense(msg));
       case 'status': return reply({ dense: denseState, retrieval: lane() });
       default: return ctx.postMessage({ id: msg.id, ok: false, error: `unknown message ${msg.type}` });

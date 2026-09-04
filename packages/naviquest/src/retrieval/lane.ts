@@ -115,7 +115,9 @@ export function createInlineLane(): Lane {
       });
       return { hits, coverage, retrieval: 'lexical' };
     },
-    fuzzy(query, k, floor) { return { hits: fuzzyRank(s.controlDocs, query, k, floor) }; },
+    fuzzy(query, k, floor) {
+      return { hits: fuzzyRank(s.controlDocs, query, k, floor, s.tok!.fold) };
+    },
     tokens: (t) => s.tok!.tokens(t),
     controlTokens: (t) => s.ctlTokens(t),
     locale: () => s.tok?.locale ?? null,

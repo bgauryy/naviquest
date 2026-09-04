@@ -2,9 +2,8 @@
 
 Everything here was measured, not asserted. Each number names the command that
 reproduces it; where a claim could not be supported, that is said instead of
-smoothed over. Method and every caveat:
-[research/METHODOLOGY.md](./research/METHODOLOGY.md) · how to run any of it:
-[README.md](./README.md).
+smoothed over. The current research-race contract is [../POC.md](../POC.md), and
+the eval commands are in [README.md](./README.md).
 
 Run 2026-09-03 · Chrome 152.0.7977.75 · `naviquest` at commit `986abf8`.
 

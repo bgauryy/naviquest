@@ -13,7 +13,7 @@
  * refuses to compare if the two runs did not answer the same questions.
  *
  * Quality comes from each run's own blind-judge verdicts.json — never recomputed
- * here. Cost, calls and wall-clock are the harness's measurements.
+ * here. Retrieval-payload cost, calls and wall-clock are the harness's measurements.
  */
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
@@ -71,10 +71,10 @@ const row = (label, off, on) => {
 
 console.log(`\n=== naviquest arm: AI off vs AI on — same ${kOff.size} questions ===\n`);
 console.log(`  ${''.padEnd(26)}${'AI off'.padStart(12)}${'AI on'.padStart(12)}${'delta'.padStart(9)}`);
-row('total tokens', sum(runs.off.nq, 'tokens'), sum(runs.on.nq, 'tokens'));
+row('retrieval-payload tokens', sum(runs.off.nq, 'tokens'), sum(runs.on.nq, 'tokens'));
 row('tool calls', sum(runs.off.nq, 'calls'), sum(runs.on.nq, 'calls'));
 row('wall-clock ms', sum(runs.off.nq, 'ms'), sum(runs.on.nq, 'ms'));
-row('peak context held', peak(runs.off.nq, 'contextHeld'), peak(runs.on.nq, 'contextHeld'));
+row('largest payload', peak(runs.off.nq, 'contextHeld'), peak(runs.on.nq, 'contextHeld'));
 
 const qOff = quality(runs.off.verdicts, 'naviquest');
 const qOn = quality(runs.on.verdicts, 'naviquest');

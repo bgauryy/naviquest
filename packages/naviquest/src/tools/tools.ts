@@ -173,6 +173,38 @@ export function createTools(d: ToolDeps) {
     return keyFold.fold(value).replace(/\s+/g, ' ').trim();
   };
   const semanticLedger = createSemanticLedger(cfg.delta.semanticHistory, cfg.delta.maxSemanticChanges);
+  type SearchCache<T> = { version: number; key: string; value: Awaitable<T> };
+  let contentSearchCache: SearchCache<ContentSearchResult> | null = null;
+  let controlSearchCache: SearchCache<ControlSearchResult> | null = null;
+  /** Continuations reuse one ranking over one immutable index revision. This
+   * avoids sorting and transferring the full hit population again. A rejected
+   * worker call evicts itself so the next call can recover. */
+  const cachedSearch = <T>(cache: SearchCache<T> | null, key: string,
+                           run: () => Awaitable<T>, get: () => SearchCache<T> | null,
+                           set: (next: SearchCache<T> | null) => void): Awaitable<T> => {
+    if (cache?.version === st.version && cache.key === key) return cache.value;
+    const raw = run();
+    if (typeof (raw as Promise<T>)?.then !== 'function') {
+      set({ version: st.version, key, value: raw });
+      return raw;
+    }
+    const version = st.version;
+    const value = Promise.resolve(raw).catch((error) => {
+      // A later concurrent query may already own the one-entry cache.
+      if (get()?.value === value) set(null);
+      throw error;
+    });
+    set({ version, key, value });
+    return value;
+  };
+  const searchContent = (query: string, k: number) => cachedSearch(
+    contentSearchCache, `${query}\u0000${k}`,
+    () => lane.searchContent(query, k, cfg.retrieval), () => contentSearchCache,
+    (next) => { contentSearchCache = next; });
+  const searchControls = (query: string, k: number) => cachedSearch(
+    controlSearchCache, `${query}\u0000${k}`,
+    () => lane.searchControls(query, k, cfg.retrieval), () => controlSearchCache,
+    (next) => { controlSearchCache = next; });
   // One Gemini Nano session for the whole instance, shared by both readers so
   // the page loads the model once. Fail-open when the Prompt API is absent.
   const lmSession = createLmSession({
@@ -667,7 +699,7 @@ export function createTools(d: ToolDeps) {
       // auto 2/7 on the vocabulary misses (eval/expand-measure.mjs). BM25 recall
       // on true vocabulary mismatch needs the semantic embedder, not more terms.
       const want = Math.max(1, st.contentTargets.length);
-      const primary = lane.searchContent(query, want, cfg.retrieval);
+      const primary = searchContent(query, want);
       // Default path: single-language retrieval, unchanged.
       if (cfg.retrieval.crossLanguage === 'off') {
         return chain(primary, (found) => findOnPageBody(query, goal, limit, offset, since, found));
@@ -680,7 +712,7 @@ export function createTools(d: ToolDeps) {
       const pageLang = lane.locale() ?? (typeof document !== 'undefined' ? document.documentElement.lang : '') ?? '';
       return chain(translator.translateQuery(query, pageLang), (translated) => {
         if (!translated) return chain(primary, (found) => findOnPageBody(query, goal, limit, offset, since, found));
-        return chain(primary, (found) => chain(lane.searchContent(translated, want, cfg.retrieval), (found2) => {
+        return chain(primary, (found) => chain(searchContent(translated, want), (found2) => {
           const fused: ContentSearchResult = { ...found2, exact: found.exact,
             hits: rrf([found.hits, found2.hits], cfg.lexical.rrfK, want) };
           return findOnPageBody(query, goal, limit, offset, since, fused);
@@ -1037,7 +1069,7 @@ export function createTools(d: ToolDeps) {
     // FILTERS, not a ranking change.
     //
     // A structural prior was tried and rejected — weighting by landmark and role
-    // made every configuration worse (VALIDATION § 8.3), so ranking is left
+    // made every measured configuration worse, so ranking is left
     // alone. What the agent can do instead is say what it already knows: "the
     // one that paginates", "a textbox, not a link", "in the navigation". That
     // cannot regress the ranker because it only removes candidates the agent has
@@ -1054,7 +1086,7 @@ export function createTools(d: ToolDeps) {
       // leave the new controls unranked — false ambiguity, short pagination, or
       // the wrong candidate for a control that is right there.
       const want = Math.max(1, st.controls.length);
-      return chain(lane.searchControls(description, want, cfg.retrieval),
+      return chain(searchControls(description, want),
       (found) => {
         // POST-filter. Gating the recovery path on the PRE-filter count meant a
         // filter that removed every candidate fell through to the ranked body
@@ -2699,8 +2731,9 @@ export function createTools(d: ToolDeps) {
       // The no-manifest path contains `links`, not `docs`. The generic docs-only
       // shrinker made no progress there, so CNN returned 2,036 tokens against an
       // adaptive ceiling and GOV.UK spent 199% of the page it was meant to save
-      // (2026-09-01, eval:tools). Shrink the list that actually exists and name
-      // its omitted count independently from manifest-document truncation.
+      // in the 2026-09-01 live measurement. Shrink the list that actually
+      // exists and name its omitted count independently from
+      // manifest-document truncation.
       if ((o.docs?.length ?? 0) > 1) {
         o.docs = o.docs.slice(0, halve(o.docs.length));
       } else if ((o.links?.length ?? 0) > 1) {

@@ -66,8 +66,8 @@ export function informativeTerms(idx: BM25Index, qTerms: string[], commonTermSha
  * not interchangeable: "discount" narrows 46 chunks to one, "of" narrows nothing.
  *
  * The fix is the narrow one, and it was chosen by measurement rather than taste.
- * Two variants were run in the deleted `answer:eval` experiment—ten real
- * questions on live pages whose answer keys predated this feature:
+ * Two variants were run in a historical experiment—ten real questions on live
+ * pages whose answer keys predated this feature:
  *
  *                            answer rate   precision   MISLED
  *   baseline                    3/10         3/3        0

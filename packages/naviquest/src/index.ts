@@ -216,6 +216,9 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
   // `cfg.project.rootFallbacks`, so resolving a root first put `cfg` in its
   // temporal dead zone. Nothing here depends on a root.
   const cfg = resolveConfig(config.tuning);
+  const exclude = config.exclude ?? [];
+  const autoReindex = config.autoReindex !== false;
+  const worker = !!config.worker;
   let rootEl = resolveRoot()
     ?? (hasExplicitRoot ? missingExplicitRoot : document.documentElement ?? missingExplicitRoot);
   let primaryRootEl = resolvePrimaryRoot(rootEl) ?? rootEl;
@@ -265,8 +268,8 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
    * what lets projection, freshness and the sync page-side surface keep working
    * unchanged while the module is still in flight.
    */
-  const laneAsync = !!config.worker;
-  const laneKind: Lane['kind'] = config.worker ? 'worker' : 'inline';
+  const laneAsync = worker;
+  const laneKind: Lane['kind'] = worker ? 'worker' : 'inline';
   let lane: Lane | null = null;
   let lanePromise: Promise<Lane> | null = null;
   /** Why the lane is absent, when it is absent for good. Read by `lane()`, which
@@ -274,7 +277,7 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
    *  chunk that 404s. */
   let laneError: unknown = null;
   const laneReady = (): Awaitable<Lane> => lane ?? (lanePromise ??= import('./retrieval/lane.ts')
-    .then((m) => (lane = config.worker
+    .then((m) => (lane = worker
       ? m.createWorkerLane(config.workerFactory ?? defaultWorkerFactory)
       : m.createInlineLane()))
     .catch((e) => {
@@ -337,7 +340,7 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
     const registeredShadows = [...registeredRegions].filter(isQueryableShadowRoot);
     const modal = detectModal(registeredShadows).element;
     return modal && !flatContains(rootEl, modal)
-      && !excludedDeep(modal, config.exclude ?? []) ? modal : null;
+      && !excludedDeep(modal, exclude) ? modal : null;
   };
   /** The roots indexed beyond `rootEl`: registered regions plus the transient
    *  modal root. One derivation — this list was spelled inline at four sites. */
@@ -453,8 +456,7 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
   let tearSeq = 0;
   /** Every freshness-relevant change, including ones that cannot tear projection. */
   let mutationSeq = 0;
-
-  if (config.autoReindex !== false && typeof MutationObserver !== 'undefined') {
+  if (autoReindex && typeof MutationObserver !== 'undefined') {
     observer = new MutationObserver((records) => {
       dirty = true;
       lastMutationAt = performance.now();
@@ -464,7 +466,7 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
       for (const r of records) {
         if (r.type === 'childList'
           || (r.type === 'attributes' && r.attributeName
-            && (TEAR_ATTRS.has(r.attributeName) || (config.exclude?.length ?? 0) > 0))) { tearSeq++; break; }
+            && (TEAR_ATTRS.has(r.attributeName) || exclude.length))) { tearSeq++; break; }
       }
     });
     try { observer.observe(rootEl!, OBSERVE); } catch { observer = null; }
@@ -515,11 +517,11 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
     settling: (): boolean =>
       (performance.now() - lastMutationAt) < cfg.delta.settleQuietMs
       || !!document.querySelector('[aria-busy="true"]'),
-    autoReindex: config.autoReindex !== false,
+    autoReindex,
     // query_selector's exact-CSS path is the only path that can reach an element
     // the projection walk deliberately skipped, so it needs the exclusion
     // contract explicitly. Its semantic views stay inside the projection.
-    exclude: config.exclude ?? [], redact: config.redact,
+    exclude, redact: config.redact,
     orientation: config.orientation,
     onIntent: config.onIntent,
   };
@@ -564,7 +566,7 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
    *  mode, a promise for it. Every tool routes through `chain()` so one
    *  implementation of each tool serves both lanes. */
   function ensureFresh() {
-    if (config.autoReindex === false) return false;
+    if (!autoReindex) return false;
     // Inferred locale belongs to the current SPA view, not to SDK construction.
     // Sites switch `<html lang>` without replacing the body; freezing the old
     // tokenizer made Turkish dotted/dotless-I queries disagree with authored
@@ -614,8 +616,9 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
    * Slicing hands the main thread back mid-walk, so the DOM can move underneath
    * a pass and the result can describe a page that never existed at any instant.
    * A torn projection does not throw — it mints addresses that resolve to the
-   * wrong element or to nothing, and address re-resolution is 100% across the 18
-   * live sites in `eval:real`. That number is what this guard protects.
+   * wrong element or to nothing. Historical live-site measurements reached 100%
+   * address re-resolution across 18 sites; rebuild the sensor before changing
+   * this guard.
    *
    * Two preconditions, both of them necessary:
    *
@@ -631,7 +634,7 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
     // platform interaction root here as well so an SDK installed while a modal
     // is already open starts from the usable surface.
     transientInteractionRoot = resolveTransientInteractionRoot();
-    const opts = { exclude: config.exclude ?? [], redact: config.redact,
+    const opts = { exclude, redact: config.redact,
       project: cfg.project, affordance: cfg.affordance, nonText: cfg.nonText,
       discovery: cfg.discovery, navLandmarks: cfg.retrieval.navLandmarks,
       extraRoots: overlayRoots(),
@@ -662,7 +665,6 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
    */
   function mergeFrames(p: Projection): Projection {
     if (!cfg.discovery.frames || !rootEl) return p;
-    const exclude = config.exclude ?? [];
     const opts = { exclude, redact: config.redact, project: cfg.project,
       affordance: cfg.affordance, nonText: cfg.nonText,
       discovery: { ...cfg.discovery, frames: false },   // depth 1: no nested-frame recursion
@@ -964,7 +966,7 @@ export function createNaviquest(config: NaviquestConfig = {}): Awaitable<Navique
   /**
    * Warm the dense lane.
    *
-   * Measured (VALIDATION § 8.7): served gzipped over a real network, the table
+   * Historical network measurement: served gzipped, the table
    * costs 0.04 s unthrottled, 6.19 s on fast 4G, 13.90 s on regular 4G and
    * 34.59 s on slow 4G. An agent will not wait fourteen seconds for a search, so
    * "lazy on first query" is not a shippable policy on its own. Three rules fall

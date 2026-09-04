@@ -999,6 +999,49 @@ async function laneContracts(browser: Browser) {
     } finally {
       await chromePage.close();
     }
+
+    // MutationObserver cannot see CSSStyleSheet rule edits. The host-facing
+    // explicit reindex seam keeps a CSSOM-only visibility transition recoverable
+    // without patching browser prototypes or rebuilding eagerly.
+    const cssomPage = await browser.newPage();
+    try {
+      await cssomPage.setContent('<style id="rules">.revealed { display: none }</style><main><h1>Research</h1><p class="revealed">zebra nebula answer</p></main>');
+      await cssomPage.addScriptTag({ content: BUNDLE });
+      const cssom = await cssomPage.evaluate(async () => {
+        const wq: any = await (window as any).WQ.createNaviquest({});
+        const before = await wq.tools.find_on_page({ query: 'zebra nebula' });
+        (document.getElementById('rules') as HTMLStyleElement).sheet!.deleteRule(0);
+        const stale = await wq.tools.find_on_page({ query: 'zebra nebula' });
+        await wq.reindex();
+        const fresh = await wq.tools.find_on_page({ query: 'zebra nebula' });
+        return { before, stale, fresh };
+      });
+      check('CSSOM-only content stays stale until the host reindexes',
+        cssom.before.matched === 0 && cssom.stale.matched === 0
+          && cssom.stale.revision === cssom.before.revision, cssom);
+      check('reindex rebuilds CSSOM-only visible content',
+        cssom.fresh.revision > cssom.stale.revision
+          && String(cssom.fresh.results?.[0]?.text ?? '').includes('zebra nebula answer'), cssom.fresh);
+    } finally {
+      await cssomPage.close();
+    }
+
+    // Locale-sensitive case mapping is part of lexical identity. Turkish I/İ
+    // previously collapsed before BM25, so DOM order selected the wrong region
+    // even though the exact lane identified the right authored character.
+    const localePage = await browser.newPage();
+    try {
+      await localePage.setContent('<html lang="tr"><main><section><h2>Wrong</h2><p>I</p></section><section><h2>Right</h2><p>İ</p></section></main></html>');
+      await localePage.addScriptTag({ content: BUNDLE });
+      const locale = await localePage.evaluate(async () => {
+        const wq: any = await (window as any).WQ.createNaviquest({});
+        return wq.tools.find_on_page({ query: 'İ', limit: 5 });
+      });
+      check('Turkish dotted and dotless I remain distinct in lexical retrieval',
+        String(locale.results?.[0]?.text ?? '').trim() === 'İ', locale.results);
+    } finally {
+      await localePage.close();
+    }
   } finally {
     await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   }
@@ -1695,6 +1738,36 @@ const RANK_QUERIES: Array<{ query: string; gold: string }> = [
   { query: 'shipping and delivery times', gold: 'Shipping' },
 ];
 
+/** Frozen after creation: these pages are held out from ranking-tuning fixtures.
+ * They exercise complete projection → index → public-tool behavior, not the
+ * score multiplier in isolation. Add cases; do not rewrite gold to fit output. */
+const HELD_OUT_SEARCH = [
+  {
+    id: 'operations-dashboard',
+    html: '<main><h1>Payments</h1><section><h2>Retry policy</h2><p>Failed card payments retry automatically every six hours for two days.</p><article><h3>Northwind invoice</h3><p>The invoice failed after the final attempt.</p><button>Download invoice</button></article></section></main>',
+    content: [
+      { query: 'failed card payment retry schedule', gold: 'every six hours' },
+      { query: 'card payment schedule', gold: 'every six hours' },
+    ],
+    control: { query: 'download the Northwind invoice', gold: 'Download invoice' },
+  },
+  {
+    id: 'api-reference',
+    html: '<main><h1>Request API</h1><section><h2>Cancellation</h2><p>Pass an AbortSignal in the signal option to cancel an in-flight request.</p><button>Run example</button></section><section><h2>Retries</h2><p>Retry only idempotent requests after a network failure.</p></section></main>',
+    content: [
+      { query: 'how do I cancel an in-flight request with an AbortSignal', gold: 'signal option' },
+      { query: 'cancel request AbortSignal', gold: 'signal option' },
+    ],
+    control: { query: 'run the cancellation example', gold: 'Run example' },
+  },
+  {
+    id: 'turkish-support',
+    html: '<html lang="tr"><main><section><h2>Yanlış</h2><p>I</p></section><section><h2>Doğru</h2><p>İ</p><button>İndir</button></section></main></html>',
+    content: [{ query: 'İ', gold: 'İ' }],
+    control: { query: 'İndir', gold: 'İndir' },
+  },
+] as const;
+
 // #6: a dense <img alt> (a description of a picture, short and noun-packed —
 // lexically ideal) in its own section, competing with the prose that answers.
 // The alt text is not a claim the page makes, so it must not out-rank the prose.
@@ -1858,6 +1931,35 @@ async function laneRank(browser: Browser) {
       refOff > 0 && Math.abs(refOn - refOff * 0.5) < 0.01, { refOff, refOn });
     check('the citation prior leaves answering content untouched',
       contentOff > 0 && Math.abs(contentOn - contentOff) < 0.01, { contentOff, contentOn });
+
+    let contentHit = 0;
+    let contentTotal = 0;
+    let controlHit = 0;
+    const misses: Array<{ fixture: string; kind: string; query: string; got: unknown }> = [];
+    for (const fixture of HELD_OUT_SEARCH) {
+      await page.setContent(fixture.html);
+      await page.addScriptTag({ content: BUNDLE });
+      const measured = await page.evaluate(async ({ content, control }) => {
+        const wq: any = await (window as any).WQ.createNaviquest({});
+        const passages = [];
+        for (const c of content) passages.push(await wq.tools.find_on_page({ query: c.query, limit: 3 }));
+        const located = await wq.tools.locate_control({ description: control.query, limit: 3 });
+        wq.dispose();
+        return { passages, located };
+      }, fixture);
+      fixture.content.forEach((c, i) => {
+        contentTotal++;
+        const got = String(measured.passages[i]?.results?.[0]?.text ?? '');
+        if (got.includes(c.gold)) contentHit++;
+        else misses.push({ fixture: fixture.id, kind: 'content', query: c.query, got });
+      });
+      const gotControl = String(measured.located?.candidates?.[0]?.name ?? '');
+      if (gotControl === fixture.control.gold) controlHit++;
+      else misses.push({ fixture: fixture.id, kind: 'control', query: fixture.control.query, got: gotControl });
+    }
+    console.log(`  frozen held-out: content hit@1 ${contentHit}/${contentTotal} · control hit@1 ${controlHit}/${HELD_OUT_SEARCH.length}`);
+    check('frozen held-out content queries retain rank-1', contentHit === contentTotal, misses);
+    check('frozen held-out control intents retain rank-1', controlHit === HELD_OUT_SEARCH.length, misses);
 
     await page.close();
   } finally {

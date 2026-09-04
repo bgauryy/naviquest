@@ -1,115 +1,243 @@
-# WebMCP Challenge research race POC
+# Run the Naviquest versus fetch POC
 
-This proof of concept compares two agents answering the same five questions
-about the public WebMCP Challenge website. It measures answer quality, context
-cost, call count, crawl reach, and wall-clock time. It does not assume either arm
-wins.
+Run two research agents on the same five questions, then ask a third agent to
+judge their answers blind. The live dashboard at `http://localhost:5331` must
+show progress, answer quality, and retrieval-payload token use throughout the
+run.
 
-Status: proposed and unmeasured.
+The comparison has one intentional difference:
 
-## Shared starting point
+- **Naviquest agent:** uses Naviquest's six WebMCP tools in real Chrome.
+- **Fetch agent:** uses extracted page text and links from `fetch(url)`.
 
-Every question is an independent race and starts at:
+Both agents use the same model, reasoning effort, starting URL, questions,
+question order, and answer goal. Each agent handles all five questions in one
+model context, with a fresh measured session for each question.
 
-[`https://webmcp.devpost.com/`](https://webmcp.devpost.com/)
+## Primary result: estimated retrieval-payload tokens
 
-Create a fresh agent context and browser or fetch session for each question.
-Open the home URL before starting the timer, then include that open in the task's
-measurements. Do not reuse page text, tool results, navigation history, or cached
-responses from another question.
+Retrieval-payload efficiency is the primary measured result. Quality is the
+guardrail: a cheaper incomplete answer does not win.
 
-Give both agents the same start URL and question. Do not give either agent a
-destination URL, page name, selector, search phrase, expected answer, excerpt,
-or navigation advice.
+Every run must show these token numbers:
 
-## Questions
+1. **Every call:** estimated tokens in the full research result returned to the
+   agent.
+2. **Every question:** Naviquest payload tokens, fetch payload tokens, and which
+   arm used fewer.
+3. **Each arm:** total payload tokens and median payload tokens per question.
+4. **Final comparison:** median per-question ratio with IQR, plus the total-token
+   ratio as a secondary summary.
+5. **Largest payload:** the largest single result returned to each arm.
 
-1. What does a valid WebMCP Challenge submission have to include? List all
-   deliverables and the specific requirements for the project description, demo
-   video, and source-code repository.
-2. Can a project begun before August 25, 2026 qualify? Explain which work counts,
-   how judges assess it, and what evidence the entrant must provide.
-3. Give the final extended submission deadline in PT and in EDT. Explain why it
-   changed and identify the three project artifacts that must remain unchanged
-   after submissions close.
-4. How do the two judging stages work? Name all four equally weighted criteria
-   in the second stage and explain the tie-breaking order.
-5. How can judges test a submitted application in each supported browser
-   environment? Include the minimum Chrome version and required flag, whether
-   judges must open the live application, and where an entrant must provide
-   private login credentials.
+The harness applies the same estimator to both arms:
 
-## Agent arms
+```text
+tokens = ceil(JSON.stringify(fullToolResult).length / 4)
+```
 
-### Naviquest arm
+For each question, `tokens` is the sum returned by its `/call` requests, and
+`contextHeld` is the largest single-call token value. A cached fetch avoids a
+network request but still incurs payload tokens because the agent receives its
+content again. Agents must copy these measurements from the harness; they must not
+estimate or adjust them.
 
-- Use one WebMCP-enabled browser tab for the question.
-- Use only `open` and Naviquest's six registered tools for research.
-- Follow only links or addresses recovered from tool evidence.
-- Do not use direct HTTP fetches, search-engine results, or prior knowledge as
-  page evidence.
+This metric estimates retrieval payloads visible to the agent. It does not
+measure model prompt, reasoning, cached-context, or answer-generation tokens. Do
+not present it as total model usage or billing.
 
-### Fetch arm
+The aggregator calculates `fetch tokens / Naviquest tokens` for each matched
+question. A value above 1 means Naviquest used that many times fewer payload
+tokens; a value below 1 means fetch used `1 / value` times fewer. The final headline uses
+the median of these per-question ratios and reports the IQR. This prevents one
+large page from dominating the comparison. The total-token ratio remains visible
+but is not the primary result.
 
-- Use only `fetch(url)` results containing extracted page text and links.
-- Follow only links recovered from fetched pages.
-- Do not use browser DOM tools, WebMCP tools, search-engine results, or prior
-  knowledge as page evidence.
+## Start the run
 
-Use the same model, reasoning setting, timeout, token estimator, and question
-order for both arms. Run both arms concurrently when the host can isolate their
-sessions. Pin Naviquest's browser AI mode before the race and report the setting.
+From the repository root, run these setup commands:
 
-## Measurement
+```bash
+node skills/naviquest-chrome-devtools/scripts/naviquest-build.mjs --bundle-only
+node skills/naviquest-chrome-devtools/scripts/open-browser.mjs --headless \
+  --port 9222 --enableFeatures WebMCPTesting --url about:blank
+```
 
-Record these values separately for every question and arm:
+Start the host in one long-running terminal:
 
-| Metric | Definition |
-|---|---|
-| Quality | A blind judge's `correct`, `partial`, `wrong`, or `unsupported` verdict |
-| Tokens | `ceil(chars / 4)` over every complete tool-result JSON or fetch result visible to the agent |
-| Calls | Number of measured tool calls or fetches, including the initial home-page open |
-| Time | Sum of measured wall-clock milliseconds for all calls |
-| Pages reached | Number of distinct URLs opened or fetched |
-| Peak context | Largest single measured result in estimated tokens |
+```bash
+node skills/naviquest-chrome-devtools/scripts/naviquest-host.mjs \
+  --port 5340 --cdp-port 9222
+```
 
-Calculate total and median token cost, total time, total calls, peak context,
-quality score (`correct = 1`, `partial = 0.5`), and per-question wins and ties.
-Report the raw values as well as ratios.
+Start the POC harness in another long-running terminal:
 
-## Blind quality review
+```bash
+node eval/research/harness.mjs
+```
 
-Randomize the two answers independently for each question and label them only
-`A` and `B`. The judge receives the question, both answers, and an archived copy
-of the public challenge evidence captured at the start of the run. Keep the arm
-mapping hidden until all verdicts are complete.
+Keep the host and harness running. Open `http://localhost:5331`, then reset the
+run:
 
-The judge evaluates factual correctness, completeness, specificity, and support
-from the captured website. An answer that refuses to answer because retrieval
-failed is `unsupported`, even if the refusal is honest.
+```bash
+curl -sS -X POST http://localhost:5331/reset
+```
 
-## Safety and validity
+`/reset` removes the previous run's generated findings, blind-judge artifacts,
+and report, then records the current environment. It preserves `tasks.json`.
 
-- Use public pages only.
-- Do not log in, join the hackathon, open **My projects**, inspect participant
-  profiles, post to discussions, or submit forms.
-- Stop and mark the task blocked if the site requires authentication, presents a
-  challenge, or prevents public navigation. Do not bypass the gate.
-- Capture the rendered evidence and timestamp before the race. Challenge updates
-  can supersede earlier rules or schedule text.
-- Invalidate a question if the answer appears directly in its prompt or if one
-  arm receives information unavailable to the other.
+The harness pins built-in AI off so the POC compares deterministic Naviquest
+retrieval with fetch retrieval. The five shared tasks are in
+[`eval/research/out/tasks.json`](./eval/research/out/tasks.json).
 
-## Result table
+## Orchestrator sequence
 
-| Arm | Quality | Tokens | Calls | Time | Pages reached | Peak context |
-|---|---:|---:|---:|---:|---:|---:|
-| Naviquest | — | — | — | — | — | — |
-| Fetch | — | — | — | — | — | — |
+1. Confirm `GET http://localhost:5331/env` reports Chrome over CDP, AI off, and
+   five tasks.
+2. Start exactly two research agents concurrently: one Naviquest and one fetch.
+3. Give both agents the shared prompt below, followed by only their arm-specific
+   capability block.
+4. Watch the dashboard until both arms show `5 of 5`.
+5. Confirm `naviquest.jsonl` and `baseline.jsonl` each contain five schema-valid
+   rows with identical `(site, task)` keys.
+6. Run `node eval/research/aggregate.mjs validate` to create randomized A/B pairs.
+7. Start one fresh-context judge with only `out/pairs.json` and the judge prompt.
+   Do not expose the arm files or `blind-map.json` to the judge.
+8. Unblind, post the ratings to the dashboard, and generate the report.
+9. Verify that the dashboard and report show all token comparisons and all ten
+   answer verdicts.
 
-Keep the full per-question call trace and answers with the result. A five-question
-POC can demonstrate a mechanism or expose a failure, but it cannot establish a
-universal quality, token, or speed claim.
+Do not create one agent per question. Do not start judging before both research
+agents finish.
 
-Related documentation: [evaluation evidence](./docs/EVAL.md) and [research-race
-methodology](./eval/research/METHODOLOGY.md).
+## Shared research-agent prompt
+
+Give this prompt to both research agents:
+
+> Read `eval/research/out/tasks.json` and answer all five questions in order.
+> Start from the URL supplied with each task and use public page evidence only.
+> Keep one model context for the full assignment, but create a fresh harness
+> session for each question. Follow only links discovered through your allowed
+> capability. Send every research action through `/call`, including the task and
+> phase, so the dashboard receives live progress and measures its retrieval
+> payload. The reset has removed the previous run files. Write the first
+> `AgentFinding` to
+> a new arm-owned JSONL file, then append one row per completed question and POST
+> that same finding to `/finding`. After the final `/call` for a question, copy
+> its returned `totals` into the finding: `tokens`, `calls`, `ms`,
+> `pagesReached`, `contextHeld`, and `toolTrace`. Do not recalculate or edit those
+> values. Continue until all five rows pass the schema. Return a compact
+> completion summary with total and median retrieval-payload tokens, calls, time,
+> pages, and largest payload.
+
+Append exactly one of these capability blocks.
+
+### Naviquest capability
+
+> Use `arm: "naviquest"`. For each question, create `/session` with that arm.
+> Use `open` plus only the six registered Naviquest tools. Navigate only to
+> addresses recovered from Naviquest results. Do not use HTTP fetch, search
+> engines, browser DOM tools, or prior knowledge as evidence. Write exactly five
+> rows to `eval/research/out/naviquest.jsonl`.
+
+### Fetch capability
+
+> Use `arm: "baseline"`; the dashboard labels this arm “fetch.” Create a new
+> `/session` for each question. Use only the harness `fetch` tool.
+> Navigate only to links returned by fetched pages. Do not use Naviquest, search
+> engines, browser DOM tools, or prior knowledge as evidence. Write exactly five
+> rows to `eval/research/out/baseline.jsonl`.
+
+## Required progress and finding data
+
+All relative endpoints below use `http://localhost:5331` as their base. Start
+each question with:
+
+```text
+POST /session { arm: "naviquest" | "baseline" }
+```
+
+Use the returned session ID for every call made for that question.
+
+Send every research action through:
+
+```text
+POST /call { session, tool, args, task, phase }
+```
+
+The response supplies the current call's `result`, `tokens`, and `ms`, plus
+authoritative per-question totals:
+
+```text
+totals { tokens, calls, ms, pagesReached, contextHeld, toolTrace }
+```
+
+`pagesReached` counts unique URLs opened or fetched in that question's session.
+`toolTrace` lists every tool in call order, including cached fetches.
+`contextHeld` is the largest noncached result payload. After completing a
+question, copy `totals` into the schema-valid row and send it through:
+
+```text
+POST /finding {
+  arm, site, task, answer,
+  tokens, calls, ms, pagesReached, contextHeld, toolTrace,
+  phase
+}
+```
+
+The dashboard must update retrieval-payload token totals after every call. Once
+both answers for a question exist, it must show both token counts and the exact
+relative ratio, regardless of which arm used fewer tokens. It must never assume
+Naviquest wins.
+
+## Blind judge prompt
+
+After `aggregate.mjs validate` succeeds, give a fresh judge only
+`eval/research/out/pairs.json` and this prompt:
+
+> For each randomized pair, verify the answers against official public WebMCP
+> Challenge evidence. Assess answer A and answer B independently for correctness,
+> completeness, specificity, and support. Return `correct`, `partial`, `wrong`,
+> or `unsupported` with one concrete reason for each answer. Copy a short exact
+> phrase from each answer into `anchorA` or `anchorB`. Preserve each supplied
+> `pairId` and `pairDigest`. Do not infer which system produced an answer. Write
+> exactly five schema-valid objects to `eval/research/out/judge-raw.json`.
+
+If the judge cannot access the evidence or validate a pair, it must report the
+failure instead of inventing a score.
+
+## Publish the result
+
+Run:
+
+```bash
+node eval/research/aggregate.mjs unblind
+judge_payload=$(node eval/research/aggregate.mjs rate)
+curl -sS -X POST http://localhost:5331/judge \
+  -H 'content-type: application/json' --data-binary "$judge_payload"
+node eval/research/aggregate.mjs report
+```
+
+The completed dashboard and
+[`eval/research/out/RESULTS.md`](./eval/research/out/RESULTS.md) must show:
+
+- all five matched questions and both complete answers;
+- the judge's verdict and reason for each answer;
+- retrieval-payload tokens for each arm on every question;
+- the payload-token winner and ratio for every question;
+- total and median retrieval-payload tokens per arm;
+- median per-question token ratio, IQR, and total-token ratio; and
+- calls, largest payload, pages reached, and wall-clock time.
+
+The run passes when both arms have five findings, the judge has ten valid answer
+verdicts, every payload-token total comes from `/call`, and the dashboard reaches
+the results stage with complete answers.
+
+## Last verified run
+
+The last completed five-question run returned an estimated **19,594
+retrieval-payload tokens with Naviquest** and **28,333 with fetch**. Naviquest used **1.5×
+fewer payload tokens per question at the median** (IQR 1.1×–1.8×) and **1.4×
+fewer in total**. These numbers record one example; they are neither an expected
+result nor an acceptance threshold. Each new run must publish its own measured
+comparison.

@@ -55,8 +55,7 @@ export interface AgenticManifest {
   /**
    * Entries the same-origin guard removed, and the hosts they pointed at.
    *
-   * Found by the deleted `eval:webmcp` run on the WebMCP spec site, whose
-   * llms.txt is 117
+   * Found by a historical run on the WebMCP spec site, whose llms.txt is 117
    * entries of which 116 point at github.com: the guard did its job and the tool
    * reported ONE document, silently, as though that were the whole manifest. A
    * silently trimmed response reads to a model as "that is everything", which is

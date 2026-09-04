@@ -1,5 +1,5 @@
 {
-  "probedAt": "2026-09-03T20:18:10.657Z",
+  "probedAt": "2026-09-04T06:08:43.791Z",
   "origin": "https://developer.mozilla.org",
   "toolsExercised": [
     "agentic_content",
@@ -45,16 +45,9 @@
     {
       "page": "summarizer",
       "label": "find_on_page:Q2",
-      "tokens": 1193,
+      "tokens": 1212,
       "budget": 1200,
-      "pctOfBudget": 99
-    },
-    {
-      "page": "summarizer",
-      "label": "describe_app",
-      "tokens": 876,
-      "budget": 900,
-      "pctOfBudget": 97
+      "pctOfBudget": 101
     },
     {
       "page": "hub",
@@ -64,13 +57,6 @@
       "pctOfBudget": 97
     },
     {
-      "page": "prompt",
-      "label": "describe_app",
-      "tokens": 870,
-      "budget": 900,
-      "pctOfBudget": 97
-    },
-    {
       "page": "summarizer",
       "label": "query_selector:actions",
       "tokens": 1159,
@@ -78,11 +64,25 @@
       "pctOfBudget": 97
     },
     {
+      "page": "summarizer",
+      "label": "find_on_page:title",
+      "tokens": 1159,
+      "budget": 1200,
+      "pctOfBudget": 97
+    },
+    {
       "page": "prompt",
       "label": "query_selector:actions",
       "tokens": 1159,
       "budget": 1200,
       "pctOfBudget": 97
+    },
+    {
+      "page": "prompt",
+      "label": "describe_app",
+      "tokens": 868,
+      "budget": 900,
+      "pctOfBudget": 96
     }
   ],
   "violations": [],
@@ -91,7 +91,7 @@
       "page": "hub",
       "tool": "describe_app",
       "label": "describe_app",
-      "tokens": 867,
+      "tokens": 865,
       "budget": 900
     },
     {
@@ -126,14 +126,14 @@
       "page": "hub",
       "tool": "query_selector",
       "label": "query_selector:main+text",
-      "tokens": 519,
+      "tokens": 522,
       "budget": 1200
     },
     {
       "page": "hub",
       "tool": "query_selector",
       "label": "query_selector:body+text",
-      "tokens": 520,
+      "tokens": 523,
       "budget": 1200
     },
     {
@@ -147,14 +147,14 @@
       "page": "hub",
       "tool": "query_selector",
       "label": "query_selector:page1",
-      "tokens": 461,
+      "tokens": 436,
       "budget": 1200
     },
     {
       "page": "hub",
       "tool": "query_selector",
       "label": "query_selector:page2",
-      "tokens": 469,
+      "tokens": 444,
       "budget": 1200
     },
     {
@@ -196,7 +196,7 @@
       "page": "summarizer",
       "tool": "describe_app",
       "label": "describe_app",
-      "tokens": 876,
+      "tokens": 696,
       "budget": 900
     },
     {
@@ -204,7 +204,7 @@
       "tool": "agentic_content",
       "label": "agentic_content",
       "tokens": 883,
-      "budget": 2000
+      "budget": 1666
     },
     {
       "page": "summarizer",
@@ -231,14 +231,14 @@
       "page": "summarizer",
       "tool": "query_selector",
       "label": "query_selector:main+text",
-      "tokens": 519,
+      "tokens": 522,
       "budget": 1200
     },
     {
       "page": "summarizer",
       "tool": "query_selector",
       "label": "query_selector:body+text",
-      "tokens": 520,
+      "tokens": 522,
       "budget": 1200
     },
     {
@@ -252,14 +252,14 @@
       "page": "summarizer",
       "tool": "query_selector",
       "label": "query_selector:page1",
-      "tokens": 460,
+      "tokens": 435,
       "budget": 1200
     },
     {
       "page": "summarizer",
       "tool": "query_selector",
       "label": "query_selector:page2",
-      "tokens": 468,
+      "tokens": 443,
       "budget": 1200
     },
     {
@@ -273,7 +273,7 @@
       "page": "summarizer",
       "tool": "find_on_page",
       "label": "find_on_page:title",
-      "tokens": 1088,
+      "tokens": 1159,
       "budget": 1200
     },
     {
@@ -315,7 +315,7 @@
       "page": "summarizer",
       "tool": "find_on_page",
       "label": "find_on_page:Q2",
-      "tokens": 1193,
+      "tokens": 1212,
       "budget": 1200
     },
     {
@@ -357,7 +357,7 @@
       "page": "prompt",
       "tool": "describe_app",
       "label": "describe_app",
-      "tokens": 870,
+      "tokens": 868,
       "budget": 900
     },
     {
@@ -392,14 +392,14 @@
       "page": "prompt",
       "tool": "query_selector",
       "label": "query_selector:main+text",
-      "tokens": 519,
+      "tokens": 522,
       "budget": 1200
     },
     {
       "page": "prompt",
       "tool": "query_selector",
       "label": "query_selector:body+text",
-      "tokens": 520,
+      "tokens": 522,
       "budget": 1200
     },
     {
@@ -413,14 +413,14 @@
       "page": "prompt",
       "tool": "query_selector",
       "label": "query_selector:page1",
-      "tokens": 460,
+      "tokens": 435,
       "budget": 1200
     },
     {
       "page": "prompt",
       "tool": "query_selector",
       "label": "query_selector:page2",
-      "tokens": 468,
+      "tokens": 443,
       "budget": 1200
     },
     {
@@ -434,21 +434,21 @@
       "page": "prompt",
       "tool": "find_on_page",
       "label": "find_on_page:title",
-      "tokens": 1085,
+      "tokens": 1084,
       "budget": 1200
     },
     {
       "page": "prompt",
       "tool": "resolve_address",
       "label": "resolve_address:find_on_page",
-      "tokens": 415,
+      "tokens": 432,
       "budget": 2000
     },
     {
       "page": "prompt",
       "tool": "resolve_address",
       "label": "resolve_address:find_on_page",
-      "tokens": 415,
+      "tokens": 432,
       "budget": 2000
     },
     {
@@ -476,14 +476,14 @@
       "page": "prompt",
       "tool": "find_on_page",
       "label": "find_on_page:Q5:continuation",
-      "tokens": 1145,
+      "tokens": 1144,
       "budget": 1200
     },
     {
       "page": "prompt",
       "tool": "find_on_page",
       "label": "find_on_page:Q6",
-      "tokens": 636,
+      "tokens": 635,
       "budget": 1200
     }
   ]

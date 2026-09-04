@@ -14,6 +14,8 @@
  * load-bearing: scheduling may differ between lanes; answers must not.
  */
 
+import { foldDiacritics } from './text.ts';
+
 export interface ExactDocument {
   /** Original chunk text, needed to translate folded offsets without a giant
    * per-character map. */
@@ -37,8 +39,7 @@ export type Fold = (text: string) => string;
  * I remains `ı`. The locale has already been resolved by `Intl.Segmenter`, so
  * both lanes receive the same valid tag. */
 export function makeExactFold(locale: string): Fold {
-  return (text) => text.toLocaleLowerCase(locale)
-    .normalize('NFKD').replace(/\p{Diacritic}/gu, '');
+  return (text) => foldDiacritics(text, locale);
 }
 
 export function buildExactDocuments(docs: readonly string[], fold: Fold): ExactDocument[] {

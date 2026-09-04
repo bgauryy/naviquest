@@ -6,8 +6,8 @@
  * is no transformer here and no matrix multiply beyond a dot product, which is
  * why it can run in a worker on a phone at 0.023-0.039 ms per document.
  *
- * Three facts from docs/VALIDATION.md § 8 shape every decision below, and each
- * one was measured before this file existed:
+ * Three facts from the historical ranking measurements shape every decision
+ * below. Rebuild the sensor before revisiting them:
  *
  *   1. `potion-base-8M` BEATS `potion-retrieval-32M` on this task at a quarter of
  *      the bytes (fused hit@1 71% vs 57%). The retrieval-tuned model is worse.
